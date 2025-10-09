@@ -1,0 +1,21 @@
+# .husky/pre-push
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running full test suite..."
+
+# Backend tests
+echo "Testing backend..."
+npm run test --workspace=backend || {
+  echo "❌ Backend tests failed!"
+  exit 1
+}
+
+# Frontend tests
+echo "Testing frontend..."
+npm run test --workspace=frontend || {
+  echo "❌ Frontend tests failed!"
+  exit 1
+}
+
+echo "✅ All tests passed!"
