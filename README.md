@@ -54,7 +54,8 @@ time-manager/
 │   ├── ARCHITECTURE.md        # Choix techniques détaillés
 │   └── DOCKER.md              # Guide Docker complet
 ├── backend/                   --- API Express ---
-│   ├── app.js                 # Point d'entrée
+│   ├── server.js              # Lance le serveur (à part por les tests)
+│   ├── app.js                 # Api (middleware, routes et leur logique)
 │   ├── Dockerfile.dev         # Image dev (nodemon)
 │   ├── Dockerfile.prod        # Image prod (optimisée)
 │   ├── package.json
