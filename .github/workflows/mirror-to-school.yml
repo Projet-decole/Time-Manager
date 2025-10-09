@@ -1,0 +1,24 @@
+name: Mirror to School Repo
+
+on:
+    push:
+    delete:
+    create:
+    workflow_dispatch:
+
+jobs:
+    mirror:
+        runs-on: ubuntu-latest
+        if: ${{ secrets.SCHOOL_REPO_URL != '' }}
+        steps:
+            - name: Clone source repository
+              run: |
+                  git clone --mirror https://github.com/${{ github.repository }}.git source-repo
+                  cd source-repo
+
+            - name: Push to school repository
+              env:
+                  SCHOOL_REPO_URL: ${{ secrets.SCHOOL_REPO_URL }}
+              run: |
+                  cd source-repo
+                  git push --mirror "$SCHOOL_REPO_URL"
