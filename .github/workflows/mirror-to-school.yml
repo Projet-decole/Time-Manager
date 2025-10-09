@@ -9,7 +9,7 @@ on:
 jobs:
     mirror:
         runs-on: ubuntu-latest
-        if: ${{ secrets.SCHOOL_REPO_URL != '' }}
+        if: github.repository == 'Projet-decole/Time-Manager'
         steps:
             - name: Clone source repository
               run: |
