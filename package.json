@@ -1,0 +1,26 @@
+{
+	"name": "time-manager",
+	"private": true,
+	"workspaces": [
+		"frontend",
+		"backend"
+	],
+	"scripts": {
+		"prepare": "husky",
+		"test": "npm run test --workspaces",
+		"lint": "npm run lint --workspace=frontend"
+	},
+	"devDependencies": {
+		"husky": "^9.1.7",
+		"lint-staged": "^16.2.3"
+	},
+	"lint-staged": {
+		"frontend/**/*.{js,jsx}": [
+			"npm run lint --workspace=frontend -- --fix",
+			"npm run test --workspace=frontend -- --passWithNoTests --findRelatedTests"
+		],
+		"backend/**/*.js": [
+			"npm run test --workspace=backend -- --passWithNoTests --findRelatedTests"
+		]
+	}
+}
