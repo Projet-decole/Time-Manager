@@ -153,7 +153,8 @@ backend/
 │   └── supabase.js
 ├── utils/            # Utilitaires
 │   └── validators.js
-└── app.js            # Configuration Express
+├── app.js            # Configuration Express
+└── server.js         # Lance le serveur
 ```
 
 **Architecture en couches** :
