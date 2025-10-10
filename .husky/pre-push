@@ -1,6 +1,4 @@
 # .husky/pre-push
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
 echo "Running full test suite..."
 

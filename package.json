@@ -6,7 +6,7 @@
 		"backend"
 	],
 	"scripts": {
-		"prepare": "husky",
+		"prepare": "husky || true",
 		"test": "npm run test --workspaces",
 		"lint": "npm run lint --workspace=frontend"
 	},
@@ -17,10 +17,10 @@
 	"lint-staged": {
 		"frontend/**/*.{js,jsx}": [
 			"npm run lint --workspace=frontend -- --fix",
-			"npm run test --workspace=frontend -- --passWithNoTests --findRelatedTests"
+			"npm run test --workspace=frontend -- --run"
 		],
 		"backend/**/*.js": [
-			"npm run test --workspace=backend -- --passWithNoTests --findRelatedTests"
+			"npm run test --workspace=backend -- --passWithNoTests"
 		]
 	}
 }

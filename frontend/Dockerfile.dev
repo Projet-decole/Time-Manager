@@ -1,11 +1,17 @@
+# frontend/Dockerfile.dev
+
 FROM node:20-alpine
 
 WORKDIR /app
 
 COPY --chown=node:node package*.json ./
+COPY --chown=node:node frontend/package*.json ./frontend/
+
 RUN npm install
 
-COPY --chown=node:node . .
+COPY --chown=node:node frontend/ ./frontend/
+
+WORKDIR /app/frontend
 
 USER node
 
