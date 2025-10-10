@@ -1,10 +1,12 @@
+# docker-compose.prod.yml
+
 version: '3.8'
 
 services:
   backend-prod:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
+      context: .
+      dockerfile: backend/Dockerfile.prod
     ports:
       - "3000:3000"
     environment:
@@ -16,8 +18,8 @@ services:
 
   frontend-prod:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
+      context: .
+      dockerfile: frontend/Dockerfile.prod
     ports:
       - "80:80"
     depends_on:

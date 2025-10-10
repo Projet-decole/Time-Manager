@@ -1,12 +1,17 @@
+# backend/Dockerfile.prod
+
 FROM node:20-alpine
 
 WORKDIR /app
 
 COPY --chown=node:node package*.json ./
+COPY --chown=node:node backend/package*.json ./backend/
 
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
-COPY --chown=node:node . .
+COPY --chown=node:node backend/ ./backend/
+
+WORKDIR /app/backend
 
 USER node
 

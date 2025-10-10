@@ -1,3 +1,5 @@
+# frontend/.dockerignore
+
 node_modules
 npm-debug.log
 .git
