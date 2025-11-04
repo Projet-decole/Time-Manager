@@ -1,25 +1,29 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+import authRoutes from './routes/auth.js'
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+import userRoutes from './routes/user.js'
+import teamRoutes from './routes/team.js'
+import activityRoutes from './routes/activity.js'
+import projectRoutes from './routes/project.js'
+import kpiRoutes from './routes/kpi.js'
 
-// Route de test
-app.get("/", (req, res) => {
-	res.json({ message: "Time Manager API is running!" });
-});
+dotenv.config()
+const app = express()
+app.use(cors())
+app.use(express.json())
 
-app.get("/health", (req, res) => {
-	res.json({ status: "OK", timestamp: new Date() });
-});
+app.use('/', authRoutes)
 
-app.listen(PORT, () => {
-	console.log(`Server is running on port http://localhost:${PORT}`);
-});
+app.use('/user', userRoutes)
+app.use('/team', teamRoutes)
+app.use('/activity', activityRoutes)
+app.use('/project', projectRoutes)
+app.use('/kpi', kpiRoutes)
 
-module.exports = app;
+app.get('/', (req, res) => res.send('API Express + Supabase + Roles fonctionne !'))
+
+const port = process.env.PORT || 3000
+app.listen(port, () => console.log(`Serveur en ligne sur http://localhost:${port}`))
