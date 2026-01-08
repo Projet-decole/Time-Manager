@@ -86,7 +86,8 @@ jobs:
                   images: ${{ env.IMAGE_NAME_BACKEND }}
                   tags: |
                       type=ref,event=branch
-                      type=sha,prefix={{branch}}-
+                      type=ref,event=pr
+                      type=sha,prefix=sha-
                       type=raw,value=latest,enable={{is_default_branch}}
 
             - name: Build and push
@@ -126,7 +127,8 @@ jobs:
                   images: ${{ env.IMAGE_NAME_FRONTEND }}
                   tags: |
                       type=ref,event=branch
-                      type=sha,prefix={{branch}}-
+                      type=ref,event=pr
+                      type=sha,prefix=sha-
                       type=raw,value=latest,enable={{is_default_branch}}
 
             - name: Build and push
