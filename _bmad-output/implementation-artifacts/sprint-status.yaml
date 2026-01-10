@@ -61,9 +61,9 @@ development_status:
     # Backend stories (remaining)
     2-5-implement-user-profile-endpoints: done
     2-6-implement-rbac-middleware: done
-    2-7-implement-users-list-endpoint: ready-for-dev
+    2-7-implement-users-list-endpoint: done
     # Frontend stories
-    2-8-setup-frontend-auth-infrastructure: ready-for-dev
+    2-8-setup-frontend-auth-infrastructure: in-progress
     2-9-implement-auth-pages: ready-for-dev
     2-10-implement-reset-password-page: ready-for-dev
     2-11-implement-profile-page: ready-for-dev

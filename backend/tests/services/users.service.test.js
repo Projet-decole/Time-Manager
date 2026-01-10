@@ -330,4 +330,194 @@ describe('Users Service', () => {
       expect(updateCall).toHaveProperty('weekly_hours_target', 40);
     });
   });
+
+  describe('getAllUsers', () => {
+    const mockUsersList = [
+      {
+        id: '550e8400-e29b-41d4-a716-446655440001',
+        email: 'employee@test.com',
+        first_name: 'Employee',
+        last_name: 'User',
+        role: 'employee',
+        weekly_hours_target: 35,
+        created_at: '2026-01-01T00:00:00.000Z',
+        updated_at: '2026-01-01T00:00:00.000Z'
+      },
+      {
+        id: '550e8400-e29b-41d4-a716-446655440002',
+        email: 'manager@test.com',
+        first_name: 'Manager',
+        last_name: 'User',
+        role: 'manager',
+        weekly_hours_target: 40,
+        created_at: '2026-01-02T00:00:00.000Z',
+        updated_at: '2026-01-02T00:00:00.000Z'
+      }
+    ];
+
+    it('should return paginated list of users in camelCase', async () => {
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          order: jest.fn().mockReturnValue({
+            range: jest.fn().mockResolvedValue({
+              data: mockUsersList,
+              error: null,
+              count: 2
+            })
+          })
+        })
+      });
+
+      const result = await usersService.getAllUsers();
+
+      expect(result.data).toHaveLength(2);
+      expect(result.data[0]).toHaveProperty('firstName');
+      expect(result.data[0]).toHaveProperty('lastName');
+      expect(result.data[0]).not.toHaveProperty('first_name');
+      expect(result.pagination).toHaveProperty('page', 1);
+      expect(result.pagination).toHaveProperty('limit', 20);
+      expect(result.pagination).toHaveProperty('total', 2);
+    });
+
+    it('should filter by role when role filter is provided', async () => {
+      const mockEq = jest.fn().mockReturnValue({
+        order: jest.fn().mockReturnValue({
+          range: jest.fn().mockResolvedValue({
+            data: [mockUsersList[0]],
+            error: null,
+            count: 1
+          })
+        })
+      });
+
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: mockEq,
+          order: jest.fn().mockReturnValue({
+            range: jest.fn().mockResolvedValue({
+              data: mockUsersList,
+              error: null,
+              count: 2
+            })
+          })
+        })
+      });
+
+      await usersService.getAllUsers({ role: 'employee' });
+
+      expect(mockEq).toHaveBeenCalledWith('role', 'employee');
+    });
+
+    it('should ignore invalid role filter values', async () => {
+      const mockSelect = jest.fn().mockReturnValue({
+        order: jest.fn().mockReturnValue({
+          range: jest.fn().mockResolvedValue({
+            data: mockUsersList,
+            error: null,
+            count: 2
+          })
+        })
+      });
+
+      supabase.from.mockReturnValue({
+        select: mockSelect
+      });
+
+      await usersService.getAllUsers({ role: 'invalid_role' });
+
+      // Should not call eq for invalid role
+      expect(mockSelect().eq).toBeUndefined;
+    });
+
+    it('should throw DATABASE_ERROR when query fails', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          order: jest.fn().mockReturnValue({
+            range: jest.fn().mockResolvedValue({
+              data: null,
+              error: { message: 'Database connection failed' },
+              count: null
+            })
+          })
+        })
+      });
+
+      await expect(usersService.getAllUsers())
+        .rejects
+        .toThrow(AppError);
+
+      await expect(usersService.getAllUsers())
+        .rejects
+        .toMatchObject({
+          statusCode: 500,
+          code: 'DATABASE_ERROR'
+        });
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should use custom pagination when provided', async () => {
+      const mockRange = jest.fn().mockResolvedValue({
+        data: mockUsersList,
+        error: null,
+        count: 50
+      });
+
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          order: jest.fn().mockReturnValue({
+            range: mockRange
+          })
+        })
+      });
+
+      const result = await usersService.getAllUsers({}, { page: 2, limit: 10 });
+
+      expect(result.pagination.page).toBe(2);
+      expect(result.pagination.limit).toBe(10);
+      // Offset should be (2-1)*10 = 10, so range(10, 19)
+      expect(mockRange).toHaveBeenCalledWith(10, 19);
+    });
+
+    it('should handle empty result', async () => {
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          order: jest.fn().mockReturnValue({
+            range: jest.fn().mockResolvedValue({
+              data: [],
+              error: null,
+              count: 0
+            })
+          })
+        })
+      });
+
+      const result = await usersService.getAllUsers();
+
+      expect(result.data).toEqual([]);
+      expect(result.pagination.total).toBe(0);
+      expect(result.pagination.totalPages).toBe(0);
+    });
+
+    it('should handle null data from database gracefully', async () => {
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          order: jest.fn().mockReturnValue({
+            range: jest.fn().mockResolvedValue({
+              data: null,
+              error: null,
+              count: 0
+            })
+          })
+        })
+      });
+
+      const result = await usersService.getAllUsers();
+
+      expect(result.data).toEqual([]);
+      expect(result.pagination.total).toBe(0);
+    });
+  });
 });

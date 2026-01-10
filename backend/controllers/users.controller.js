@@ -1,7 +1,7 @@
 // backend/controllers/users.controller.js
 
 const usersService = require('../services/users.service');
-const { successResponse } = require('../utils/response');
+const { successResponse, paginatedResponse } = require('../utils/response');
 
 /**
  * Get current user's profile
@@ -32,4 +32,25 @@ const updateMe = async (req, res) => {
   return successResponse(res, updatedProfile);
 };
 
-module.exports = { getMe, updateMe };
+/**
+ * Get all users (manager only)
+ * @route GET /api/v1/users
+ * @param {Request} req - Express request with query params { page?, limit?, role? }
+ * @param {Response} res - Express response
+ */
+const getAll = async (req, res) => {
+  const { page, limit, role } = req.query;
+
+  const filters = {};
+  if (role) {
+    filters.role = role;
+  }
+
+  const pagination = { page, limit };
+
+  const result = await usersService.getAllUsers(filters, pagination);
+
+  return paginatedResponse(res, result.data, result.pagination);
+};
+
+module.exports = { getMe, updateMe, getAll };
