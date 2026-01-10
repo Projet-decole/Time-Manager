@@ -11,11 +11,11 @@ const mountRoutes = (app) => {
   // Root endpoint
   app.get('/', healthController.root);
 
-  // Health check endpoints
-  app.use('/health', healthRoutes);
-  app.use('/ready', healthRoutes);
+  // Health check endpoints at root level (no auth, no /api/v1 prefix)
+  // Routes: GET /health, GET /ready
+  app.use('/', healthRoutes);
 
-  // Future routes will be added here:
+  // Future API routes will be added here:
   // app.use('/api/v1/auth', authRoutes);
   // app.use('/api/v1/users', userRoutes);
   // app.use('/api/v1/time-entries', timeEntriesRoutes);
