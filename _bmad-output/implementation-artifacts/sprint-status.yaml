@@ -43,7 +43,7 @@ development_status:
   # Epic 1: Foundation & Database Setup (7 stories)
   epic-1: in-progress
   1-1-create-core-database-schema: review
-  1-2-create-time-tracking-database-tables: ready-for-dev
+  1-2-create-time-tracking-database-tables: done
   1-3-configure-row-level-security-policies: ready-for-dev
   1-4-setup-backend-project-structure: ready-for-dev
   1-5-implement-core-backend-utilities: ready-for-dev
