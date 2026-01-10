@@ -1,6 +1,6 @@
 # Story 1.5: Implement Core Backend Utilities
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -58,41 +58,41 @@ So that all endpoints follow consistent patterns.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement AppError class (AC: #1)
-  - [ ] 1.1: Create `utils/AppError.js`
-  - [ ] 1.2: Extend Error class
-  - [ ] 1.3: Add statusCode, code, details, isOperational properties
-  - [ ] 1.4: Create unit tests in `tests/utils/AppError.test.js`
+- [x] Task 1: Implement AppError class (AC: #1)
+  - [x] 1.1: Create `utils/AppError.js`
+  - [x] 1.2: Extend Error class
+  - [x] 1.3: Add statusCode, code, details, isOperational properties
+  - [x] 1.4: Create unit tests in `tests/utils/AppError.test.js`
 
-- [ ] Task 2: Implement response helpers (AC: #2)
-  - [ ] 2.1: Create `utils/response.js`
-  - [ ] 2.2: Implement `successResponse()`
-  - [ ] 2.3: Implement `errorResponse()`
-  - [ ] 2.4: Implement `paginatedResponse()`
-  - [ ] 2.5: Create unit tests in `tests/utils/response.test.js`
+- [x] Task 2: Implement response helpers (AC: #2)
+  - [x] 2.1: Create `utils/response.js`
+  - [x] 2.2: Implement `successResponse()`
+  - [x] 2.3: Implement `errorResponse()`
+  - [x] 2.4: Implement `paginatedResponse()`
+  - [x] 2.5: Create unit tests in `tests/utils/response.test.js`
 
-- [ ] Task 3: Implement transformers (AC: #3)
-  - [ ] 3.1: Create `utils/transformers.js`
-  - [ ] 3.2: Implement `snakeToCamel()` with recursion
-  - [ ] 3.3: Implement `camelToSnake()` with recursion
-  - [ ] 3.4: Handle edge cases (null, arrays, nested objects)
-  - [ ] 3.5: Create unit tests in `tests/utils/transformers.test.js`
+- [x] Task 3: Implement transformers (AC: #3)
+  - [x] 3.1: Create `utils/transformers.js`
+  - [x] 3.2: Implement `snakeToCamel()` with recursion
+  - [x] 3.3: Implement `camelToSnake()` with recursion
+  - [x] 3.4: Handle edge cases (null, arrays, nested objects)
+  - [x] 3.5: Create unit tests in `tests/utils/transformers.test.js`
 
-- [ ] Task 4: Implement Supabase client (AC: #4)
-  - [ ] 4.1: Create `utils/supabase.js`
-  - [ ] 4.2: Create anon client for user operations
-  - [ ] 4.3: Create admin client for service role operations
-  - [ ] 4.4: Read from SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+- [x] Task 4: Implement Supabase client (AC: #4)
+  - [x] 4.1: Create `utils/supabase.js`
+  - [x] 4.2: Create anon client for user operations
+  - [x] 4.3: Create admin client for service role operations
+  - [x] 4.4: Read from SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 
-- [ ] Task 5: Implement pagination helpers (AC: #5)
-  - [ ] 5.1: Create `utils/pagination.js`
-  - [ ] 5.2: Implement `parsePaginationParams()`
-  - [ ] 5.3: Implement `buildPaginationMeta()`
-  - [ ] 5.4: Create unit tests in `tests/utils/pagination.test.js`
+- [x] Task 5: Implement pagination helpers (AC: #5)
+  - [x] 5.1: Create `utils/pagination.js`
+  - [x] 5.2: Implement `parsePaginationParams()`
+  - [x] 5.3: Implement `buildPaginationMeta()`
+  - [x] 5.4: Create unit tests in `tests/utils/pagination.test.js`
 
-- [ ] Task 6: Verify test coverage (AC: #6)
-  - [ ] 6.1: Run tests with coverage
-  - [ ] 6.2: Ensure >80% coverage on utils/
+- [x] Task 6: Verify test coverage (AC: #6)
+  - [x] 6.1: Run tests with coverage
+  - [x] 6.2: Ensure >80% coverage on utils/
 
 ## Dev Notes
 
@@ -360,19 +360,26 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 ### Agent Model Used
 
-_To be filled by dev agent_
+Claude Opus 4.5 (claude-opus-4-5-20251101)
 
 ### Debug Log References
 
-_To be filled during implementation_
+- All tests passing: 124 tests, 98.78% coverage on utils/
 
 ### Completion Notes List
 
-_To be filled during implementation_
+- ✅ Task 1: AppError class implemented with full test coverage (14 tests)
+- ✅ Task 2: Response helpers (successResponse, errorResponse, paginatedResponse) implemented with full test coverage (14 tests)
+- ✅ Task 3: Transformers (snakeToCamel, camelToSnake) implemented with recursive handling for nested objects/arrays, Date/RegExp preservation, acronym support (38 tests)
+- ✅ Task 4: Supabase client configured with anon and admin clients, env var validation, testable exports (12 tests)
+- ✅ Task 5: Pagination helpers (parsePaginationParams, buildPaginationMeta) implemented with edge case handling (25 tests)
+- ✅ Task 6: Test coverage verified at 98.78% for all utils files (exceeds >80% requirement)
+- All implementations follow CommonJS syntax as required
+- Red-green-refactor cycle followed for all tasks with tests
 
 ### File List
 
-_To be filled during implementation - expected:_
+**New Files:**
 - `backend/utils/AppError.js`
 - `backend/utils/response.js`
 - `backend/utils/transformers.js`
@@ -381,4 +388,14 @@ _To be filled during implementation - expected:_
 - `backend/tests/utils/AppError.test.js`
 - `backend/tests/utils/response.test.js`
 - `backend/tests/utils/transformers.test.js`
+- `backend/tests/utils/supabase.test.js`
 - `backend/tests/utils/pagination.test.js`
+
+## Change Log
+
+- 2026-01-10: Story 1.5 implementation complete - all core backend utilities implemented with full test coverage
+- 2026-01-10: Code review fixes applied:
+  - transformers.js: Fixed Date/RegExp object preservation, fixed camelToSnake leading underscore bug for acronyms
+  - pagination.js: Added guard against limit=0 causing Infinity in buildPaginationMeta
+  - supabase.js: Added env var validation with clear error messages, exports validateEnvVars for testing
+  - Added supabase.test.js with 12 tests covering validation and exports
