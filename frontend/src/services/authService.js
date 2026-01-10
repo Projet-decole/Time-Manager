@@ -69,16 +69,9 @@ export const authService = {
     return response.data;
   },
 
-  /**
-   * Reset password with token
-   * @param {string} token - Reset token from email
-   * @param {string} password - New password
-   * @returns {Promise<Object>} Response data
-   */
-  async resetPassword(token, password) {
-    const response = await api.post('/auth/reset-password', { token, password });
-    return response.data;
-  },
+  // Note: Password reset is handled directly by Supabase on the frontend
+  // via ResetPasswordPage.jsx using supabase.auth.updateUser()
+  // No backend endpoint needed - Supabase manages the recovery token flow
 
   /**
    * Check if user has a valid access token in localStorage
