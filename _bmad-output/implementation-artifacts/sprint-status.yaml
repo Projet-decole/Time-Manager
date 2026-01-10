@@ -52,17 +52,17 @@ development_status:
     epic-1-retrospective: optional
 
     # Epic 2: Authentication & Authorization (10 stories)
-    epic-2: backlog
-    2-1-implement-supabase-auth-integration: backlog
-    2-2-implement-logout-endpoint: backlog
-    2-3-implement-authentication-middleware: backlog
-    2-4-implement-password-reset-flow: backlog
-    2-5-implement-user-profile-endpoints: backlog
-    2-6-implement-rbac-middleware: backlog
-    2-7-implement-users-list-endpoint-manager-only: backlog
-    2-8-setup-frontend-auth-context-and-service: backlog
-    2-9-implement-login-page-ui: backlog
-    2-10-implement-protected-routes: backlog
+    epic-2: in-progress
+    2-1-implement-supabase-auth-integration: done
+    2-2-implement-logout-endpoint: ready-for-dev
+    2-3-implement-authentication-middleware: ready-for-dev
+    2-4-implement-password-reset-flow: ready-for-dev
+    2-5-implement-user-profile-endpoints: ready-for-dev
+    2-6-implement-rbac-middleware: ready-for-dev
+    2-7-implement-users-list-endpoint-manager-only: ready-for-dev
+    2-8-setup-frontend-auth-context-and-service: ready-for-dev
+    2-9-implement-login-page-ui: ready-for-dev
+    2-10-implement-protected-routes: ready-for-dev
     epic-2-retrospective: optional
 
     # Epic 3: Admin Data Management (8 stories)
