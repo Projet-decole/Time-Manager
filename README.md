@@ -1,10 +1,10 @@
 # Time Manager
 
-Application de gestion du temps pour les employés et managers. Permet de pointer les arrivées/départs, gérer les équipes et visualiser des KPIs de productivité.
+Application de gestion du temps pour les employes et managers. Permet de pointer les arrivees/departs, gerer les equipes et visualiser des KPIs de productivite.
 
-**Stack** : React + Express + Supabase | Architecture monorepo avec npm workspaces, Docker, tests automatisés et CI/CD.
+**Stack** : React 19 + Express 5 + Supabase | Architecture monorepo avec npm workspaces, Docker, tests automatises et CI/CD.
 
-> **Statut du projet** : Phase de planification terminée. Architecture et spécifications validées, implémentation à venir.
+> **Statut du projet** : Epic 1 (Foundation & Database Setup) termine. Backend operationnel avec 10 tables, architecture layered, 99%+ test coverage.
 
 ## Démarrage rapide
 
@@ -21,12 +21,15 @@ Application de gestion du temps pour les employés et managers. Permet de pointe
 git clone <url-du-repo>
 cd Time-Manager
 
-# Installer les dépendances (npm workspaces)
+# Installer les dependances (npm workspaces)
 npm install
 
 # Configurer les variables d'environnement
 cp backend/.env.example backend/.env
-# Éditer backend/.env avec vos credentials Supabase
+# Editer backend/.env avec vos credentials Supabase:
+# - SUPABASE_URL=https://your-project.supabase.co
+# - SUPABASE_ANON_KEY=your-anon-key
+# - SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 ### Lancement en développement
@@ -61,19 +64,25 @@ docker-compose -f docker-compose.prod.yml up -d
 ```
 Time-Manager/
 ├── package.json              # Workspace racine + scripts globaux
-├── package-lock.json         # Lockfile partagé
-├── node_modules/             # Dépendances partagées
+├── package-lock.json         # Lockfile partage
+├── node_modules/             # Dependances partagees
 │
-├── backend/                  # Workspace backend (Express API)
-│   ├── server.js             # Point d'entrée
+├── backend/                  # Workspace backend (Express 5 API)
+│   ├── server.js             # Point d'entree HTTP
 │   ├── app.js                # Configuration Express (routes, middleware)
-│   ├── tests/                # Tests Jest + Supertest
+│   ├── routes/               # Endpoints HTTP (health.routes.js)
+│   ├── controllers/          # Logique requete/reponse
+│   ├── services/             # Business logic (health.service.js)
+│   ├── middleware/           # Auth, RBAC, validation, error handling
+│   ├── utils/                # Helpers (supabase.js, response.js, etc.)
+│   ├── validators/           # Schemas Zod (a venir)
+│   ├── tests/                # Tests Jest + Supertest (99%+ coverage)
 │   ├── Dockerfile.dev        # Image dev (nodemon)
-│   ├── Dockerfile.prod       # Image prod (optimisée)
-│   ├── package.json          # Dépendances backend
-│   └── .env                  # Variables d'environnement (non versionné)
+│   ├── Dockerfile.prod       # Image prod (optimisee)
+│   ├── package.json          # Dependances backend
+│   └── .env                  # Variables d'environnement (non versionne)
 │
-├── frontend/                 # Workspace frontend (React SPA)
+├── frontend/                 # Workspace frontend (React 19 SPA)
 │   ├── src/                  # Code source React
 │   │   ├── __tests__/        # Tests Vitest + Testing Library
 │   │   └── setupTests.js     # Configuration tests
@@ -81,50 +90,53 @@ Time-Manager/
 │   ├── Dockerfile.dev        # Image dev (Vite)
 │   ├── Dockerfile.prod       # Image prod (multi-stage, Nginx)
 │   ├── nginx.conf            # Configuration Nginx (production)
-│   └── package.json          # Dépendances frontend
+│   └── package.json          # Dependances frontend
 │
 ├── _bmad-output/             # Artefacts de planification (BMAD)
-│   └── planning-artifacts/   # Documents validés
+│   └── planning-artifacts/   # Documents valides
 │       ├── architecture.md   # Architecture technique
 │       ├── prd.md            # Product Requirements Document
+│       ├── epics.md          # Decomposition en epics et stories
 │       └── ...               # Autres documents de planification
 │
 ├── docs/                     # Documentation technique
 │   ├── DOCKER.md             # Guide Docker complet
 │   ├── CI-CD.md              # Pipeline CI/CD, Git hooks
 │   ├── TESTS.md              # Framework de tests, bonnes pratiques
-│   └── Time-manager.md       # Cahier des charges académique
+│   └── Time-manager.md       # Cahier des charges academique
 │
 ├── .husky/                   # Git hooks
 │   ├── pre-commit            # Lint + tests rapides
 │   └── pre-push              # Tests complets
 │
 ├── .github/workflows/        # CI/CD GitHub Actions
-│   └── ci-cd.yml             # Pipeline automatisé
+│   └── ci-cd.yml             # Pipeline automatise
 │
-├── docker-compose.dev.yml    # Orchestration développement
+├── docker-compose.dev.yml    # Orchestration developpement
 └── docker-compose.prod.yml   # Orchestration production
 ```
 
 ## Stack technique
 
 ### Frontend
-- **React** - Framework UI
-- **Vite** - Build tool ultra-rapide
-- **Vitest** - Framework de tests
-- **React Testing Library** - Tests de composants
+- **React 19.1** - Framework UI
+- **Vite 7** - Build tool ultra-rapide
+- **Vitest 3** - Framework de tests
+- **React Testing Library 16** - Tests de composants
 - **ESLint** - Linter
 - **Nginx** (prod) - Serveur web pour fichiers statiques
 
 ### Backend
 - **Node.js 20** (Alpine) - Runtime
-- **Express** - Framework API REST
-- **Jest** - Framework de tests
-- **Supertest** - Tests d'intégration HTTP
+- **Express 5** - Framework API REST
+- **Supabase SDK 2.58** - Client PostgreSQL + Auth
+- **Jest 30** - Framework de tests
+- **Supertest 7** - Tests d'integration HTTP
 - **dotenv** - Variables d'environnement
 
-### Base de données
-- **Supabase** - PostgreSQL hébergé + authentification
+### Base de donnees
+- **Supabase** (PostgreSQL) - 10 tables avec Row Level Security (RLS)
+- Tables: profiles, teams, team_members, projects, team_projects, categories, time_entries, timesheets, templates, audit_logs
 
 ### DevOps
 - **Docker** - Conteneurisation
