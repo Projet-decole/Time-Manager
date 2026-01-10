@@ -155,18 +155,8 @@ describe('AuthService', () => {
     });
   });
 
-  describe('resetPassword', () => {
-    test('should call API with token and new password', async () => {
-      api.post.mockResolvedValueOnce({ success: true, data: { message: 'Password reset' } });
-
-      await authService.resetPassword('reset-token', 'newPassword123');
-
-      expect(api.post).toHaveBeenCalledWith('/auth/reset-password', {
-        token: 'reset-token',
-        password: 'newPassword123'
-      });
-    });
-  });
+  // Note: resetPassword is handled directly by Supabase on ResetPasswordPage
+  // No authService method needed - see frontend/src/pages/ResetPasswordPage.jsx
 
   describe('isAuthenticated', () => {
     test('should return true when accessToken exists', () => {

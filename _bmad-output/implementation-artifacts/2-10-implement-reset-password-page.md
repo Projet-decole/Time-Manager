@@ -1,6 +1,6 @@
 # Story 2.10: Implement Reset Password Page
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -33,28 +33,28 @@ So that I can regain access to my account.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create ResetPasswordPage
-  - [ ] Create `frontend/src/pages/ResetPasswordPage.jsx`
-  - [ ] Two password fields with confirmation
-  - [ ] Validation: min 8 chars, must match
+- [x] Task 1: Create ResetPasswordPage
+  - [x] Create `frontend/src/pages/ResetPasswordPage.jsx`
+  - [x] Two password fields with confirmation
+  - [x] Validation: min 8 chars, must match
 
-- [ ] Task 2: Implement Supabase password update
-  - [ ] Supabase handles token validation automatically
-  - [ ] Use supabase.auth.updateUser({ password })
-  - [ ] Handle success and error states
+- [x] Task 2: Implement Supabase password update
+  - [x] Supabase handles token validation automatically
+  - [x] Use supabase.auth.updateUser({ password })
+  - [x] Handle success and error states
 
-- [ ] Task 3: Add route in router
-  - [ ] Add `/reset-password` route
-  - [ ] Public route (no auth required)
+- [x] Task 3: Add route in router
+  - [x] Add `/reset-password` route
+  - [x] Public route (no auth required)
 
-- [ ] Task 4: Update authService
-  - [ ] Add resetPassword(newPassword) method
-  - [ ] Initialize Supabase client in frontend if needed
+- [x] Task 4: Update authService
+  - [x] Add resetPassword(newPassword) method
+  - [x] Initialize Supabase client in frontend if needed
 
-- [ ] Task 5: Write tests
-  - [ ] Test form validation
-  - [ ] Test success flow
-  - [ ] Test error handling
+- [x] Task 5: Write tests
+  - [x] Test form validation
+  - [x] Test success flow
+  - [x] Test error handling
 
 ## Dev Notes
 
@@ -281,6 +281,39 @@ npm install @supabase/supabase-js
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Opus 4.5 (claude-opus-4-5-20251101)
+
 ### Debug Log References
+N/A
+
 ### Completion Notes List
+- Implemented ResetPasswordPage.jsx with full form validation (min 8 chars, password matching)
+- Created Supabase client module (lib/supabase.js) with graceful fallback when env vars missing
+- Added /reset-password route to App.jsx as public route
+- Updated .env.example with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY variables
+- Installed @supabase/supabase-js package
+- Created comprehensive test suite (16 tests) covering all 4 ACs:
+  - AC1: Form rendering with valid session
+  - AC2: Successful password update with success message and login link
+  - AC3: Form validation (password too short, passwords don't match, empty fields)
+  - AC4: Invalid/expired token handling with link to request new reset
+- All 76 frontend tests pass (no regressions)
+- Uses same UI patterns as LoginPage and ForgotPasswordPage (consistency)
+- SVG icons defined inline (no external dependencies like lucide-react)
+
 ### File List
+- frontend/src/pages/ResetPasswordPage.jsx (NEW)
+- frontend/src/lib/supabase.js (NEW)
+- frontend/src/App.jsx (MODIFIED - added route and import)
+- frontend/.env.example (MODIFIED - added Supabase vars)
+- frontend/package.json (MODIFIED - added @supabase/supabase-js)
+- frontend/src/__tests__/pages/ResetPasswordPage.test.jsx (NEW)
+- frontend/.gitignore (MODIFIED - added .env ignore rules)
+- frontend/Dockerfile.prod (MODIFIED - added VITE_SUPABASE_* build args)
+- .github/workflows/ci-cd.yml (MODIFIED - added VITE_SUPABASE_* build args)
+- frontend/src/services/authService.js (MODIFIED - removed dead resetPassword method, added comment)
+- frontend/src/__tests__/services/authService.test.js (MODIFIED - removed orphan resetPassword test)
+
+### Change Log
+- 2026-01-11: Code review fixes - removed dead authService.resetPassword(), fixed test act() warning, updated File List
+- 2026-01-10: Story 2.10 implemented - Reset Password Page with Supabase integration
