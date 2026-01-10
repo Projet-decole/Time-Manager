@@ -23,7 +23,7 @@ describe('Express App Configuration', () => {
       expect(response.body).toHaveProperty('success', false);
     });
 
-    it('should reject malformed JSON with 400 error', async () => {
+    it('should reject malformed JSON with 400 error and standard format', async () => {
       const response = await request(app)
         .post('/health')
         .send('{ invalid json }')
@@ -31,6 +31,10 @@ describe('Express App Configuration', () => {
 
       // Express JSON parser should reject malformed JSON
       expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('success', false);
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toHaveProperty('code', 'BAD_REQUEST');
+      expect(response.body.error).toHaveProperty('message', 'Invalid JSON in request body');
     });
 
     it('should have CORS enabled', async () => {
