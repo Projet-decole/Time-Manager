@@ -1,51 +1,81 @@
 // backend/middleware/auth.middleware.js
 
+const { supabase } = require('../utils/supabase');
 const AppError = require('../utils/AppError');
+const { snakeToCamel } = require('../utils/transformers');
 
 /**
- * Authentication middleware placeholder
- * TODO: Implement full token validation in Story 2.3 - Implement Authentication Middleware
+ * Authentication middleware that validates JWT tokens with Supabase.
  *
- * This middleware will:
- * - Extract JWT from Authorization header
- * - Validate token with Supabase Auth (Story 2.3)
- * - Attach user object to req.user
- * - Return 401 if invalid/missing token
+ * Validates the Bearer token from Authorization header using Supabase Auth,
+ * fetches user profile, and attaches user object to req.user.
  *
- * IMPORTANT for Story 2.3:
- * - Must validate token with Supabase Auth (supabase.auth.getUser(token))
- * - Must set req.user = { id: <user_uuid>, email: <user_email>, ... }
- * - The logout endpoint depends on req.accessToken being set
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ *
+ * @throws {AppError} 401 UNAUTHORIZED - Missing/invalid/expired token
  */
+const authenticate = async (req, res, next) => {
+  try {
+    // Extract Authorization header
+    const authHeader = req.headers.authorization;
 
-const authenticate = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+    // Check if Authorization header exists
+    if (!authHeader) {
+      throw new AppError('Authorization header required', 401, 'UNAUTHORIZED');
+    }
 
-  // Check if Authorization header exists and has correct format
-  // Note: RFC 7235 specifies that the auth scheme is case-insensitive
-  if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) {
-    throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+    // Check if header has correct Bearer format (case-insensitive per RFC 7235)
+    if (!authHeader.toLowerCase().startsWith('bearer ')) {
+      throw new AppError('Invalid authorization format', 401, 'UNAUTHORIZED');
+    }
+
+    // Extract the token (handle any case of "Bearer")
+    const token = authHeader.slice(7);
+
+    // Check if token is not empty
+    if (!token || token.trim() === '') {
+      throw new AppError('Invalid token format', 401, 'UNAUTHORIZED');
+    }
+
+    // Set the access token on request for logout endpoint
+    req.accessToken = token;
+
+    // Validate token with Supabase Auth
+    const {
+      data: { user },
+      error
+    } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      throw new AppError('Invalid or expired token', 401, 'UNAUTHORIZED');
+    }
+
+    // Fetch user profile from profiles table for role and additional info
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, role, weekly_hours_target')
+      .eq('id', user.id)
+      .single();
+
+    // Log profile fetch errors (auth succeeded, continue with minimal user data)
+    if (profileError) {
+      console.warn('[AUTH] Profile fetch failed for user:', user.id, profileError.message);
+    }
+
+    // Attach user object to request
+    // Transform snake_case profile fields to camelCase
+    req.user = {
+      id: user.id,
+      email: user.email,
+      ...snakeToCamel(profile || {})
+    };
+
+    next();
+  } catch (error) {
+    next(error);
   }
-
-  // Extract the token (handle any case of "Bearer")
-  const token = authHeader.slice(7);
-
-  if (!token || token.trim() === '') {
-    throw new AppError('Invalid token format', 401, 'UNAUTHORIZED');
-  }
-
-  // Set the access token on request for logout endpoint
-  req.accessToken = token;
-
-  // PLACEHOLDER: Set mock user for testing
-  // Story 2.3 MUST replace this with real token validation via Supabase Auth
-  // TODO: const { data: { user }, error } = await supabase.auth.getUser(token);
-  req.user = {
-    id: 'placeholder-user-id',
-    email: 'placeholder@example.com'
-  };
-
-  next();
 };
 
 module.exports = { authenticate };

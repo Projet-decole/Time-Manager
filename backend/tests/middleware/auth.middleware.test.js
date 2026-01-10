@@ -1,7 +1,25 @@
 // backend/tests/middleware/auth.middleware.test.js
 
-const { authenticate } = require('../../middleware/auth.middleware');
 const AppError = require('../../utils/AppError');
+
+// Mock Supabase before requiring the middleware
+jest.mock('../../utils/supabase', () => ({
+  supabase: {
+    auth: {
+      getUser: jest.fn()
+    },
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          single: jest.fn()
+        }))
+      }))
+    }))
+  }
+}));
+
+const { authenticate } = require('../../middleware/auth.middleware');
+const { supabase } = require('../../utils/supabase');
 
 describe('Auth Middleware', () => {
   let mockReq;
@@ -17,140 +35,324 @@ describe('Auth Middleware', () => {
       json: jest.fn()
     };
     mockNext = jest.fn();
+
+    // Reset all mocks
+    jest.clearAllMocks();
   });
 
   describe('authenticate', () => {
-    it('should call next() when valid Bearer token is provided', () => {
-      mockReq.headers.authorization = 'Bearer valid-token-123';
+    describe('AC#1: Valid token populates req.user', () => {
+      it('should populate req.user with id, email, and role when token is valid', async () => {
+        mockReq.headers.authorization = 'Bearer valid-token-123';
 
-      authenticate(mockReq, mockRes, mockNext);
+        // Mock Supabase auth.getUser success
+        supabase.auth.getUser.mockResolvedValue({
+          data: {
+            user: {
+              id: 'user-uuid-123',
+              email: 'test@example.com'
+            }
+          },
+          error: null
+        });
 
-      expect(mockNext).toHaveBeenCalledTimes(1);
-      expect(mockReq.accessToken).toBe('valid-token-123');
-      expect(mockReq.user).toBeDefined();
-    });
+        // Mock profile query
+        const mockSingle = jest.fn().mockResolvedValue({
+          data: {
+            first_name: 'John',
+            last_name: 'Doe',
+            role: 'employee',
+            weekly_hours_target: 35
+          },
+          error: null
+        });
+        const mockEq = jest.fn(() => ({ single: mockSingle }));
+        const mockSelect = jest.fn(() => ({ eq: mockEq }));
+        supabase.from.mockReturnValue({ select: mockSelect });
 
-    it('should accept lowercase "bearer" scheme (RFC 7235 case-insensitive)', () => {
-      mockReq.headers.authorization = 'bearer lowercase-token';
+        await authenticate(mockReq, mockRes, mockNext);
 
-      authenticate(mockReq, mockRes, mockNext);
+        expect(mockNext).toHaveBeenCalledTimes(1);
+        expect(mockNext).toHaveBeenCalledWith();
+        expect(mockReq.user).toEqual({
+          id: 'user-uuid-123',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          role: 'employee',
+          weeklyHoursTarget: 35
+        });
+      });
 
-      expect(mockNext).toHaveBeenCalledTimes(1);
-      expect(mockReq.accessToken).toBe('lowercase-token');
-    });
+      it('should set accessToken on request for logout endpoint', async () => {
+        mockReq.headers.authorization = 'Bearer my-jwt-token';
 
-    it('should accept uppercase "BEARER" scheme (RFC 7235 case-insensitive)', () => {
-      mockReq.headers.authorization = 'BEARER UPPERCASE-TOKEN';
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: { id: 'user-123', email: 'test@example.com' } },
+          error: null
+        });
 
-      authenticate(mockReq, mockRes, mockNext);
+        const mockSingle = jest.fn().mockResolvedValue({
+          data: { role: 'employee' },
+          error: null
+        });
+        const mockEq = jest.fn(() => ({ single: mockSingle }));
+        const mockSelect = jest.fn(() => ({ eq: mockEq }));
+        supabase.from.mockReturnValue({ select: mockSelect });
 
-      expect(mockNext).toHaveBeenCalledTimes(1);
-      expect(mockReq.accessToken).toBe('UPPERCASE-TOKEN');
-    });
+        await authenticate(mockReq, mockRes, mockNext);
 
-    it('should accept mixed case "BeArEr" scheme (RFC 7235 case-insensitive)', () => {
-      mockReq.headers.authorization = 'BeArEr MixedCase-Token';
+        expect(mockReq.accessToken).toBe('my-jwt-token');
+      });
 
-      authenticate(mockReq, mockRes, mockNext);
+      it('should proceed to next handler after successful authentication', async () => {
+        mockReq.headers.authorization = 'Bearer valid-token';
 
-      expect(mockNext).toHaveBeenCalledTimes(1);
-      expect(mockReq.accessToken).toBe('MixedCase-Token');
-    });
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: { id: 'user-123', email: 'test@example.com' } },
+          error: null
+        });
 
-    it('should set accessToken on request from Authorization header', () => {
-      mockReq.headers.authorization = 'Bearer my-jwt-token';
+        const mockSingle = jest.fn().mockResolvedValue({
+          data: { role: 'manager' },
+          error: null
+        });
+        const mockEq = jest.fn(() => ({ single: mockSingle }));
+        const mockSelect = jest.fn(() => ({ eq: mockEq }));
+        supabase.from.mockReturnValue({ select: mockSelect });
 
-      authenticate(mockReq, mockRes, mockNext);
+        await authenticate(mockReq, mockRes, mockNext);
 
-      expect(mockReq.accessToken).toBe('my-jwt-token');
-    });
+        expect(mockNext).toHaveBeenCalledWith();
+        expect(mockReq.user.id).toBe('user-123');
+        expect(mockReq.user.email).toBe('test@example.com');
+        expect(mockReq.user.role).toBe('manager');
+      });
 
-    it('should set placeholder user on request', () => {
-      mockReq.headers.authorization = 'Bearer test-token';
+      it('should handle profile not found gracefully', async () => {
+        mockReq.headers.authorization = 'Bearer valid-token';
 
-      authenticate(mockReq, mockRes, mockNext);
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: { id: 'user-123', email: 'test@example.com' } },
+          error: null
+        });
 
-      expect(mockReq.user).toEqual({
-        id: 'placeholder-user-id',
-        email: 'placeholder@example.com'
+        // Profile not found
+        const mockSingle = jest.fn().mockResolvedValue({
+          data: null,
+          error: null
+        });
+        const mockEq = jest.fn(() => ({ single: mockSingle }));
+        const mockSelect = jest.fn(() => ({ eq: mockEq }));
+        supabase.from.mockReturnValue({ select: mockSelect });
+
+        await authenticate(mockReq, mockRes, mockNext);
+
+        expect(mockNext).toHaveBeenCalledWith();
+        expect(mockReq.user.id).toBe('user-123');
+        expect(mockReq.user.email).toBe('test@example.com');
+      });
+
+      it('should log warning and continue when profile query fails with error', async () => {
+        mockReq.headers.authorization = 'Bearer valid-token';
+        const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: { id: 'user-456', email: 'test@example.com' } },
+          error: null
+        });
+
+        // Profile query fails with network error
+        const mockSingle = jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Network error' }
+        });
+        const mockEq = jest.fn(() => ({ single: mockSingle }));
+        const mockSelect = jest.fn(() => ({ eq: mockEq }));
+        supabase.from.mockReturnValue({ select: mockSelect });
+
+        await authenticate(mockReq, mockRes, mockNext);
+
+        // Should still proceed (auth succeeded)
+        expect(mockNext).toHaveBeenCalledWith();
+        expect(mockReq.user.id).toBe('user-456');
+        expect(mockReq.user.email).toBe('test@example.com');
+
+        // Should log warning about profile fetch failure
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          '[AUTH] Profile fetch failed for user:',
+          'user-456',
+          'Network error'
+        );
+
+        consoleWarnSpy.mockRestore();
       });
     });
 
-    it('should throw UNAUTHORIZED error when no Authorization header', () => {
-      expect(() => authenticate(mockReq, mockRes, mockNext)).toThrow(AppError);
+    describe('AC#2: Missing Authorization header returns 401', () => {
+      it('should return 401 when no Authorization header is present', async () => {
+        await authenticate(mockReq, mockRes, mockNext);
 
-      try {
-        authenticate(mockReq, mockRes, mockNext);
-      } catch (error) {
+        expect(mockNext).toHaveBeenCalledTimes(1);
+        const error = mockNext.mock.calls[0][0];
         expect(error).toBeInstanceOf(AppError);
         expect(error.statusCode).toBe(401);
         expect(error.code).toBe('UNAUTHORIZED');
-        expect(error.message).toBe('Authentication required');
-      }
+      });
+
+      it('should return error format matching AC#2 spec', async () => {
+        await authenticate(mockReq, mockRes, mockNext);
+
+        const error = mockNext.mock.calls[0][0];
+        expect(error.message).toBeDefined();
+        expect(error.code).toBe('UNAUTHORIZED');
+        expect(error.statusCode).toBe(401);
+      });
     });
 
-    it('should throw UNAUTHORIZED error when Authorization header is empty', () => {
-      mockReq.headers.authorization = '';
+    describe('AC#3: Invalid or expired token returns 401', () => {
+      it('should return 401 when Supabase returns error for invalid token', async () => {
+        mockReq.headers.authorization = 'Bearer invalid-token';
 
-      expect(() => authenticate(mockReq, mockRes, mockNext)).toThrow(AppError);
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: null },
+          error: { message: 'Invalid token' }
+        });
 
-      try {
-        authenticate(mockReq, mockRes, mockNext);
-      } catch (error) {
+        await authenticate(mockReq, mockRes, mockNext);
+
+        expect(mockNext).toHaveBeenCalledTimes(1);
+        const error = mockNext.mock.calls[0][0];
+        expect(error).toBeInstanceOf(AppError);
         expect(error.statusCode).toBe(401);
         expect(error.code).toBe('UNAUTHORIZED');
-      }
-    });
+      });
 
-    it('should throw UNAUTHORIZED error when Authorization header does not start with Bearer', () => {
-      mockReq.headers.authorization = 'Basic sometoken';
+      it('should return 401 when Supabase returns null user', async () => {
+        mockReq.headers.authorization = 'Bearer expired-token';
 
-      expect(() => authenticate(mockReq, mockRes, mockNext)).toThrow(AppError);
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: null },
+          error: null
+        });
 
-      try {
-        authenticate(mockReq, mockRes, mockNext);
-      } catch (error) {
+        await authenticate(mockReq, mockRes, mockNext);
+
+        expect(mockNext).toHaveBeenCalledTimes(1);
+        const error = mockNext.mock.calls[0][0];
+        expect(error).toBeInstanceOf(AppError);
+        expect(error.statusCode).toBe(401);
+        expect(error.message).toContain('Invalid');
+      });
+
+      it('should return 401 when token is expired', async () => {
+        mockReq.headers.authorization = 'Bearer expired-jwt-token';
+
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: null },
+          error: { message: 'JWT expired' }
+        });
+
+        await authenticate(mockReq, mockRes, mockNext);
+
+        const error = mockNext.mock.calls[0][0];
         expect(error.statusCode).toBe(401);
         expect(error.code).toBe('UNAUTHORIZED');
-        expect(error.message).toBe('Authentication required');
-      }
+      });
     });
 
-    it('should throw UNAUTHORIZED error when Bearer token is empty', () => {
-      mockReq.headers.authorization = 'Bearer ';
+    describe('AC#4: Malformed Authorization header returns 401', () => {
+      it('should return 401 with "Invalid authorization format" for non-Bearer scheme', async () => {
+        mockReq.headers.authorization = 'Basic sometoken';
 
-      expect(() => authenticate(mockReq, mockRes, mockNext)).toThrow(AppError);
+        await authenticate(mockReq, mockRes, mockNext);
 
-      try {
-        authenticate(mockReq, mockRes, mockNext);
-      } catch (error) {
+        const error = mockNext.mock.calls[0][0];
+        expect(error).toBeInstanceOf(AppError);
+        expect(error.statusCode).toBe(401);
+        expect(error.message).toBe('Invalid authorization format');
+      });
+
+      it('should return 401 for empty Authorization header', async () => {
+        mockReq.headers.authorization = '';
+
+        await authenticate(mockReq, mockRes, mockNext);
+
+        const error = mockNext.mock.calls[0][0];
+        expect(error.statusCode).toBe(401);
+      });
+
+      it('should return 401 for Bearer without token', async () => {
+        mockReq.headers.authorization = 'Bearer ';
+
+        await authenticate(mockReq, mockRes, mockNext);
+
+        const error = mockNext.mock.calls[0][0];
         expect(error.statusCode).toBe(401);
         expect(error.code).toBe('UNAUTHORIZED');
-        expect(error.message).toBe('Invalid token format');
-      }
-    });
+      });
 
-    it('should throw UNAUTHORIZED error when Bearer token is whitespace only', () => {
-      mockReq.headers.authorization = 'Bearer    ';
+      it('should return 401 for Bearer with only whitespace', async () => {
+        mockReq.headers.authorization = 'Bearer    ';
 
-      expect(() => authenticate(mockReq, mockRes, mockNext)).toThrow(AppError);
+        await authenticate(mockReq, mockRes, mockNext);
 
-      try {
-        authenticate(mockReq, mockRes, mockNext);
-      } catch (error) {
+        const error = mockNext.mock.calls[0][0];
         expect(error.statusCode).toBe(401);
-        expect(error.code).toBe('UNAUTHORIZED');
-      }
+      });
+
+      it('should return 401 for malformed "Bearertoken" without space', async () => {
+        mockReq.headers.authorization = 'Bearertoken123';
+
+        await authenticate(mockReq, mockRes, mockNext);
+
+        const error = mockNext.mock.calls[0][0];
+        expect(error.statusCode).toBe(401);
+      });
     });
 
-    it('should not call next() when authentication fails', () => {
-      try {
-        authenticate(mockReq, mockRes, mockNext);
-      } catch (error) {
-        // Expected to throw
-      }
+    describe('RFC 7235 Case-Insensitive Bearer Scheme', () => {
+      beforeEach(() => {
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: { id: 'user-123', email: 'test@example.com' } },
+          error: null
+        });
 
-      expect(mockNext).not.toHaveBeenCalled();
+        const mockSingle = jest.fn().mockResolvedValue({
+          data: { role: 'employee' },
+          error: null
+        });
+        const mockEq = jest.fn(() => ({ single: mockSingle }));
+        const mockSelect = jest.fn(() => ({ eq: mockEq }));
+        supabase.from.mockReturnValue({ select: mockSelect });
+      });
+
+      it('should accept lowercase "bearer" scheme', async () => {
+        mockReq.headers.authorization = 'bearer lowercase-token';
+
+        await authenticate(mockReq, mockRes, mockNext);
+
+        expect(mockNext).toHaveBeenCalledWith();
+        expect(mockReq.accessToken).toBe('lowercase-token');
+      });
+
+      it('should accept uppercase "BEARER" scheme', async () => {
+        mockReq.headers.authorization = 'BEARER UPPERCASE-TOKEN';
+
+        await authenticate(mockReq, mockRes, mockNext);
+
+        expect(mockNext).toHaveBeenCalledWith();
+        expect(mockReq.accessToken).toBe('UPPERCASE-TOKEN');
+      });
+
+      it('should accept mixed case "BeArEr" scheme', async () => {
+        mockReq.headers.authorization = 'BeArEr MixedCase-Token';
+
+        await authenticate(mockReq, mockRes, mockNext);
+
+        expect(mockNext).toHaveBeenCalledWith();
+        expect(mockReq.accessToken).toBe('MixedCase-Token');
+      });
     });
   });
 });
