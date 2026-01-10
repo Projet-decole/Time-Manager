@@ -1,6 +1,6 @@
 # Story 1.2: Create Time Tracking Database Tables
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -80,42 +80,42 @@ So that time entries and timesheets can be stored.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create migration file (AC: #6)
-  - [ ] 1.1: Create migration file `002_time_tracking_schema.sql` with timestamp prefix
+- [x] Task 1: Create migration file (AC: #6)
+  - [x] 1.1: Create migration file `002_time_tracking_schema.sql` with timestamp prefix
 
-- [ ] Task 2: Implement time_entries table (AC: #1)
-  - [ ] 2.1: Write CREATE TABLE statement for time_entries
-  - [ ] 2.2: Add CHECK constraint for entry_mode enum ('simple', 'day', 'template')
-  - [ ] 2.3: Add foreign keys to profiles, projects, categories
-  - [ ] 2.4: Verify nullable fields for running timer support
+- [x] Task 2: Implement time_entries table (AC: #1)
+  - [x] 2.1: Write CREATE TABLE statement for time_entries
+  - [x] 2.2: Add CHECK constraint for entry_mode enum ('simple', 'day', 'template')
+  - [x] 2.3: Add foreign keys to profiles, projects, categories
+  - [x] 2.4: Verify nullable fields for running timer support
 
-- [ ] Task 3: Implement timesheets table (AC: #2)
-  - [ ] 3.1: Write CREATE TABLE statement for timesheets
-  - [ ] 3.2: Add CHECK constraint for status enum
-  - [ ] 3.3: Add UNIQUE constraint on (user_id, week_start)
-  - [ ] 3.4: Add foreign key for validated_by to profiles
+- [x] Task 3: Implement timesheets table (AC: #2)
+  - [x] 3.1: Write CREATE TABLE statement for timesheets
+  - [x] 3.2: Add CHECK constraint for status enum
+  - [x] 3.3: Add UNIQUE constraint on (user_id, week_start)
+  - [x] 3.4: Add foreign key for validated_by to profiles
 
-- [ ] Task 4: Implement templates table (AC: #3)
-  - [ ] 4.1: Write CREATE TABLE statement for templates
-  - [ ] 4.2: Verify JSONB type for config field
+- [x] Task 4: Implement templates table (AC: #3)
+  - [x] 4.1: Write CREATE TABLE statement for templates
+  - [x] 4.2: Verify JSONB type for config field
 
-- [ ] Task 5: Implement audit_logs table (AC: #4)
-  - [ ] 5.1: Write CREATE TABLE statement for audit_logs
-  - [ ] 5.2: Verify JSONB type for old_values and new_values
+- [x] Task 5: Implement audit_logs table (AC: #4)
+  - [x] 5.1: Write CREATE TABLE statement for audit_logs
+  - [x] 5.2: Verify JSONB type for old_values and new_values
 
-- [ ] Task 6: Create indexes (AC: #5)
-  - [ ] 6.1: Create composite index on time_entries(user_id, start_time)
-  - [ ] 6.2: Create index on time_entries(start_time) for date range queries
-  - [ ] 6.3: Create composite index on timesheets(user_id, week_start)
-  - [ ] 6.4: Create index on timesheets(status) for filtering
-  - [ ] 6.5: Create composite index on audit_logs(table_name, record_id)
-  - [ ] 6.6: Create index on audit_logs(user_id)
+- [x] Task 6: Create indexes (AC: #5)
+  - [x] 6.1: Create composite index on time_entries(user_id, start_time)
+  - [x] 6.2: Create index on time_entries(start_time) for date range queries
+  - [x] 6.3: Create composite index on timesheets(user_id, week_start)
+  - [x] 6.4: Create index on timesheets(status) for filtering
+  - [x] 6.5: Create composite index on audit_logs(table_name, record_id)
+  - [x] 6.6: Create index on audit_logs(user_id)
 
-- [ ] Task 7: Apply and verify migration
-  - [ ] 7.1: Apply migration via Supabase MCP
-  - [ ] 7.2: Verify all tables created correctly
-  - [ ] 7.3: Verify all constraints and indexes exist
-  - [ ] 7.4: Verify foreign key relationships work
+- [x] Task 7: Apply and verify migration
+  - [x] 7.1: Apply migration via Supabase MCP
+  - [x] 7.2: Verify all tables created correctly
+  - [x] 7.3: Verify all constraints and indexes exist
+  - [x] 7.4: Verify foreign key relationships work
 
 ## Dev Notes
 
@@ -301,17 +301,79 @@ draft → submitted → validated
 
 ### Agent Model Used
 
-_To be filled by dev agent_
+Claude Opus 4.5 (claude-opus-4-5-20251101)
 
 ### Debug Log References
 
-_To be filled during implementation_
+Aucun problème rencontré. Migration appliquée avec succès au premier essai.
 
 ### Completion Notes List
 
-_To be filled during implementation_
+- ✅ Migration `20260110111412_create_time_tracking_tables` créée et appliquée via Supabase MCP
+- ✅ Table `time_entries` créée avec tous les champs requis (AC #1)
+  - Foreign keys vers profiles, projects, categories
+  - CHECK constraint pour entry_mode ('simple', 'day', 'template')
+  - end_time nullable pour support timer actif
+- ✅ Table `timesheets` créée avec tous les champs requis (AC #2)
+  - CHECK constraint pour status ('draft', 'submitted', 'validated', 'rejected')
+  - UNIQUE constraint sur (user_id, week_start)
+  - Foreign key validated_by vers profiles
+- ✅ Table `templates` créée avec config JSONB (AC #3)
+- ✅ Table `audit_logs` créée - append-only (AC #4)
+  - user_id nullable pour actions système
+  - old_values et new_values en JSONB
+- ✅ Tous les index créés (AC #5):
+  - idx_time_entries_user_id, idx_time_entries_start_time, idx_time_entries_user_start
+  - idx_timesheets_user_week, idx_timesheets_status
+  - idx_audit_logs_record, idx_audit_logs_user
+- ✅ Triggers updated_at configurés pour time_entries, timesheets, templates
+
+### Change Log
+
+- 2026-01-10: Story 1.2 implémentée - Tables de suivi du temps créées (time_entries, timesheets, templates, audit_logs) avec tous les index et contraintes requis
 
 ### File List
 
-_To be filled during implementation - expected:_
-- `supabase/migrations/20260110XXXXXX_create_time_tracking_tables.sql`
+- `supabase/migrations/20260110111412_create_time_tracking_tables.sql`
+- `supabase/migrations/20260110112410_story_1_2_code_review_fixes.sql`
+
+---
+
+## Code Review Record
+
+### Review Date
+
+2026-01-10
+
+### Reviewer
+
+Developer Agent (Code Review Mode) - Claude Opus 4.5
+
+### Issues Found
+
+| # | Sévérité | Description | Status |
+|---|---|---|---|
+| 1 | CRITICAL | AC #6 - Fichier migration local manquant | ✅ CORRIGÉ |
+| 2 | CRITICAL | audit_logs sans protection DELETE (FR79) | ✅ CORRIGÉ |
+| 3 | MEDIUM | FK project_id/category_id sans ON DELETE SET NULL | ✅ CORRIGÉ |
+| 4 | MEDIUM | Index manquant sur templates(user_id) | ✅ CORRIGÉ |
+| 5 | MEDIUM | Fonction update_updated_at_column search_path mutable | ✅ CORRIGÉ |
+| 6 | LOW | RLS désactivé (prévu Story 1.3) | N/A |
+| 7 | LOW | File List incomplet dans story file | ✅ CORRIGÉ |
+
+### Corrections Appliquées
+
+1. **Fichier migration local créé:** `supabase/migrations/20260110111412_create_time_tracking_tables.sql`
+2. **Migration de correction appliquée:** `20260110112410_story_1_2_code_review_fixes`
+   - Trigger `prevent_audit_logs_delete_trigger` pour bloquer les DELETE sur audit_logs
+   - FK `time_entries_project_id_fkey` avec ON DELETE SET NULL
+   - FK `time_entries_category_id_fkey` avec ON DELETE SET NULL
+   - Index `idx_templates_user_id` créé
+   - Fonction `update_updated_at_column` avec SECURITY DEFINER et search_path fixe
+
+### Post-Review Validation
+
+- ✅ Tous les AC implémentés et vérifiés
+- ✅ Fichiers de migration locaux créés et synchronisés
+- ✅ Alerte Supabase `function_search_path_mutable` résolue
+- ✅ Protection append-only sur audit_logs active
