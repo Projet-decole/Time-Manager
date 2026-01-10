@@ -1,6 +1,6 @@
 # Story 1.3: Configure Row Level Security Policies
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -55,56 +55,56 @@ So that data access is secured at the database level.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create migration file (AC: #8)
-  - [ ] 1.1: Create migration file `003_rls_policies.sql`
+- [x] Task 1: Create migration file (AC: #8)
+  - [x] 1.1: Create migration file `003_rls_policies.sql`
 
-- [ ] Task 2: Enable RLS on all tables
-  - [ ] 2.1: `ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;`
-  - [ ] 2.2: `ALTER TABLE teams ENABLE ROW LEVEL SECURITY;`
-  - [ ] 2.3: `ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;`
-  - [ ] 2.4: `ALTER TABLE projects ENABLE ROW LEVEL SECURITY;`
-  - [ ] 2.5: `ALTER TABLE team_projects ENABLE ROW LEVEL SECURITY;`
-  - [ ] 2.6: `ALTER TABLE categories ENABLE ROW LEVEL SECURITY;`
-  - [ ] 2.7: `ALTER TABLE time_entries ENABLE ROW LEVEL SECURITY;`
-  - [ ] 2.8: `ALTER TABLE timesheets ENABLE ROW LEVEL SECURITY;`
-  - [ ] 2.9: `ALTER TABLE templates ENABLE ROW LEVEL SECURITY;`
-  - [ ] 2.10: `ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;`
+- [x] Task 2: Enable RLS on all tables
+  - [x] 2.1: `ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;`
+  - [x] 2.2: `ALTER TABLE teams ENABLE ROW LEVEL SECURITY;`
+  - [x] 2.3: `ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;`
+  - [x] 2.4: `ALTER TABLE projects ENABLE ROW LEVEL SECURITY;`
+  - [x] 2.5: `ALTER TABLE team_projects ENABLE ROW LEVEL SECURITY;`
+  - [x] 2.6: `ALTER TABLE categories ENABLE ROW LEVEL SECURITY;`
+  - [x] 2.7: `ALTER TABLE time_entries ENABLE ROW LEVEL SECURITY;`
+  - [x] 2.8: `ALTER TABLE timesheets ENABLE ROW LEVEL SECURITY;`
+  - [x] 2.9: `ALTER TABLE templates ENABLE ROW LEVEL SECURITY;`
+  - [x] 2.10: `ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;`
 
-- [ ] Task 3: Implement profiles policies (AC: #1)
-  - [ ] 3.1: Policy for users to read own profile
-  - [ ] 3.2: Policy for managers to read all profiles
-  - [ ] 3.3: Policy for users to update own profile
-  - [ ] 3.4: Policy for users to insert own profile
+- [x] Task 3: Implement profiles policies (AC: #1)
+  - [x] 3.1: Policy for users to read own profile
+  - [x] 3.2: Policy for managers to read all profiles
+  - [x] 3.3: Policy for users to update own profile
+  - [x] 3.4: Policy for users to insert own profile
 
-- [ ] Task 4: Implement time_entries policies (AC: #2)
-  - [ ] 4.1: Policy for users to CRUD own entries
-  - [ ] 4.2: Policy for managers to read all entries
+- [x] Task 4: Implement time_entries policies (AC: #2)
+  - [x] 4.1: Policy for users to CRUD own entries
+  - [x] 4.2: Policy for managers to read all entries
 
-- [ ] Task 5: Implement timesheets policies (AC: #3)
-  - [ ] 5.1: Policy for users to read own timesheets
-  - [ ] 5.2: Policy for users to create own timesheets
-  - [ ] 5.3: Policy for users to update own draft/rejected timesheets
-  - [ ] 5.4: Policy for managers to read all timesheets
-  - [ ] 5.5: Policy for managers to update timesheets (validate/reject)
+- [x] Task 5: Implement timesheets policies (AC: #3)
+  - [x] 5.1: Policy for users to read own timesheets
+  - [x] 5.2: Policy for users to create own timesheets
+  - [x] 5.3: Policy for users to update own draft/rejected timesheets
+  - [x] 5.4: Policy for managers to read all timesheets
+  - [x] 5.5: Policy for managers to update timesheets (validate/reject)
 
-- [ ] Task 6: Implement templates policies (AC: #4)
-  - [ ] 6.1: Policy for users to full CRUD own templates
+- [x] Task 6: Implement templates policies (AC: #4)
+  - [x] 6.1: Policy for users to full CRUD own templates
 
-- [ ] Task 7: Implement admin tables policies (AC: #5, #6)
-  - [ ] 7.1: Policy for all authenticated to read teams, projects, categories
-  - [ ] 7.2: Policy for managers to mutate teams, projects, categories
-  - [ ] 7.3: Policy for all authenticated to read junction tables
-  - [ ] 7.4: Policy for managers to mutate junction tables
+- [x] Task 7: Implement admin tables policies (AC: #5, #6)
+  - [x] 7.1: Policy for all authenticated to read teams, projects, categories
+  - [x] 7.2: Policy for managers to mutate teams, projects, categories
+  - [x] 7.3: Policy for all authenticated to read junction tables
+  - [x] 7.4: Policy for managers to mutate junction tables
 
-- [ ] Task 8: Implement audit_logs policies (AC: #7)
-  - [ ] 8.1: No SELECT policy (service role only)
-  - [ ] 8.2: INSERT via service role only
+- [x] Task 8: Implement audit_logs policies (AC: #7)
+  - [x] 8.1: No SELECT policy (service role only)
+  - [x] 8.2: INSERT via service role only
 
-- [ ] Task 9: Apply and verify migration
-  - [ ] 9.1: Apply migration via Supabase MCP
-  - [ ] 9.2: Test user access patterns
-  - [ ] 9.3: Test manager access patterns
-  - [ ] 9.4: Verify audit_logs is protected
+- [x] Task 9: Apply and verify migration
+  - [x] 9.1: Apply migration via Supabase MCP
+  - [x] 9.2: Test user access patterns (manual verification via pg_policies)
+  - [x] 9.3: Test manager access patterns (manual verification via pg_policies)
+  - [x] 9.4: Verify audit_logs is protected (verified via security advisors)
 
 ## Dev Notes
 
@@ -377,17 +377,38 @@ Time-Manager/
 
 ### Agent Model Used
 
-_To be filled by dev agent_
+Claude Opus 4.5 (claude-opus-4-5-20251101)
 
 ### Debug Log References
 
-_To be filled during implementation_
+- Migration `20260110113501_rls_policies` applied successfully
+- Migration `20260110113538_fix_is_manager_search_path` applied to fix security advisory
+- All 10 tables verified with `rls_enabled: true`
+- 30 policies created and verified via `pg_policies`
+- Helper function `is_manager()` created with `SECURITY DEFINER` and secure `search_path`
+- Supabase security advisor confirms only INFO-level advisory for `audit_logs` (intentional per AC #7)
 
 ### Completion Notes List
 
-_To be filled during implementation_
+- **AC #1 (profiles):** 4 policies - `profiles_select_own`, `profiles_select_manager`, `profiles_update_own`, `profiles_insert_own`
+- **AC #2 (time_entries):** 2 policies - `time_entries_all_own` (FOR ALL), `time_entries_select_manager`
+- **AC #3 (timesheets):** 5 policies - `timesheets_select_own`, `timesheets_insert_own`, `timesheets_update_own` (draft/rejected only), `timesheets_select_manager`, `timesheets_update_manager`
+- **AC #4 (templates):** 1 policy - `templates_all_own` (FOR ALL)
+- **AC #5 (admin tables):** 12 policies - SELECT for authenticated + INSERT/UPDATE/DELETE for managers on teams, projects, categories
+- **AC #6 (junction tables):** 6 policies - SELECT for authenticated + INSERT/DELETE for managers on team_members, team_projects
+- **AC #7 (audit_logs):** 0 policies (intentional) - RLS enabled but no user policies = service role only access
+- **AC #8 (migration):** Migrations applied via Supabase MCP: `20260110113501_rls_policies`, `fix_is_manager_search_path`
+- **Security fix:** `is_manager()` function updated with `SET search_path = ''` to prevent search_path injection attacks
 
 ### File List
 
-_To be filled during implementation - expected:_
-- `supabase/migrations/20260110XXXXXX_rls_policies.sql`
+- `supabase/migrations/20260110113501_rls_policies.sql`
+- `supabase/migrations/20260110113538_fix_is_manager_search_path.sql`
+
+### Change Log
+
+| Date | Change |
+|------|--------|
+| 2026-01-10 | Story implementation complete - all RLS policies configured for 10 tables |
+| 2026-01-10 | [Code Review] Created local migration files from Supabase MCP (CR-001 fix) |
+| 2026-01-10 | [Code Review] Fixed migration timestamp documentation (CR-003, CR-006 fix) |
