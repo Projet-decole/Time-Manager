@@ -642,4 +642,332 @@ describe('Users Routes', () => {
       expect(response.body.success).toBe(true);
     });
   });
+
+  describe('GET /api/v1/users (Manager Only)', () => {
+    const mockManagerProfile = {
+      id: '550e8400-e29b-41d4-a716-446655440001',
+      email: 'manager@example.com',
+      first_name: 'Manager',
+      last_name: 'User',
+      role: 'manager',
+      weekly_hours_target: 40,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+
+    const mockEmployeeProfile = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      email: 'employee@example.com',
+      first_name: 'Employee',
+      last_name: 'User',
+      role: 'employee',
+      weekly_hours_target: 35,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+
+    const mockUsersList = [
+      mockEmployeeProfile,
+      {
+        id: '550e8400-e29b-41d4-a716-446655440002',
+        email: 'john@example.com',
+        first_name: 'John',
+        last_name: 'Doe',
+        role: 'employee',
+        weekly_hours_target: 35,
+        created_at: '2026-01-02T00:00:00.000Z',
+        updated_at: '2026-01-02T00:00:00.000Z'
+      },
+      mockManagerProfile
+    ];
+
+    const setupManagerAuth = () => {
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockManagerProfile.id, email: mockManagerProfile.email } },
+        error: null
+      });
+
+      // This mock handles both auth middleware profile fetch and getAllUsers
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockManagerProfile,
+              error: null
+            })
+          }),
+          order: jest.fn().mockReturnValue({
+            range: jest.fn().mockResolvedValue({
+              data: mockUsersList,
+              error: null,
+              count: 3
+            })
+          })
+        })
+      });
+    };
+
+    const setupEmployeeAuth = () => {
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockEmployeeProfile.id, email: mockEmployeeProfile.email } },
+        error: null
+      });
+
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockEmployeeProfile,
+              error: null
+            })
+          })
+        })
+      });
+    };
+
+    describe('AC#1: Manager gets paginated list of all users', () => {
+      it('should return 200 with paginated user list for manager', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .get('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token');
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(Array.isArray(response.body.data)).toBe(true);
+        expect(response.body.meta).toHaveProperty('pagination');
+        expect(response.body.meta.pagination).toHaveProperty('page');
+        expect(response.body.meta.pagination).toHaveProperty('limit');
+        expect(response.body.meta.pagination).toHaveProperty('total');
+        expect(response.body.meta.pagination).toHaveProperty('totalPages');
+      });
+
+      it('should return users in camelCase format', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .get('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token');
+
+        expect(response.status).toBe(200);
+        expect(response.body.data[0]).toHaveProperty('firstName');
+        expect(response.body.data[0]).toHaveProperty('lastName');
+        expect(response.body.data[0]).toHaveProperty('weeklyHoursTarget');
+        expect(response.body.data[0]).toHaveProperty('createdAt');
+        // Should NOT have snake_case
+        expect(response.body.data[0]).not.toHaveProperty('first_name');
+        expect(response.body.data[0]).not.toHaveProperty('last_name');
+      });
+    });
+
+    describe('AC#2: Pagination and filtering', () => {
+      it('should respect page and limit parameters', async () => {
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: { id: mockManagerProfile.id, email: mockManagerProfile.email } },
+          error: null
+        });
+
+        const mockRange = jest.fn().mockResolvedValue({
+          data: [mockUsersList[0]],
+          error: null,
+          count: 3
+        });
+
+        const mockOrder = jest.fn().mockReturnValue({
+          range: mockRange
+        });
+
+        supabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({
+                data: mockManagerProfile,
+                error: null
+              })
+            }),
+            order: mockOrder
+          })
+        });
+
+        const response = await request(app)
+          .get('/api/v1/users?page=2&limit=1')
+          .set('Authorization', 'Bearer manager-token');
+
+        expect(response.status).toBe(200);
+        expect(response.body.meta.pagination.page).toBe(2);
+        expect(response.body.meta.pagination.limit).toBe(1);
+      });
+
+      it('should filter users by role when role query param is provided', async () => {
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: { id: mockManagerProfile.id, email: mockManagerProfile.email } },
+          error: null
+        });
+
+        const employeesOnly = mockUsersList.filter(u => u.role === 'employee');
+
+        const mockRange = jest.fn().mockResolvedValue({
+          data: employeesOnly,
+          error: null,
+          count: 2
+        });
+
+        const mockOrder = jest.fn().mockReturnValue({
+          range: mockRange
+        });
+
+        const mockEq = jest.fn().mockReturnValue({
+          order: mockOrder
+        });
+
+        supabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockImplementation((field, value) => {
+              if (field === 'id') {
+                return {
+                  single: jest.fn().mockResolvedValue({
+                    data: mockManagerProfile,
+                    error: null
+                  })
+                };
+              }
+              if (field === 'role') {
+                return {
+                  order: mockOrder
+                };
+              }
+              return { single: jest.fn() };
+            }),
+            order: mockOrder
+          })
+        });
+
+        const response = await request(app)
+          .get('/api/v1/users?role=employee')
+          .set('Authorization', 'Bearer manager-token');
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.every(u => u.role === 'employee')).toBe(true);
+      });
+    });
+
+    describe('AC#3: Employee access forbidden', () => {
+      it('should return 403 Forbidden for employee', async () => {
+        setupEmployeeAuth();
+
+        const response = await request(app)
+          .get('/api/v1/users')
+          .set('Authorization', 'Bearer employee-token');
+
+        expect(response.status).toBe(403);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'FORBIDDEN');
+      });
+    });
+
+    describe('AC#4: Unauthenticated access', () => {
+      it('should return 401 Unauthorized without auth header', async () => {
+        const response = await request(app)
+          .get('/api/v1/users');
+
+        expect(response.status).toBe(401);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
+      });
+
+      it('should return 401 with invalid token', async () => {
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: null },
+          error: { message: 'Invalid token' }
+        });
+
+        const response = await request(app)
+          .get('/api/v1/users')
+          .set('Authorization', 'Bearer invalid-token');
+
+        expect(response.status).toBe(401);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
+      });
+    });
+
+    describe('Query validation', () => {
+      it('should use default pagination when params not provided', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .get('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token');
+
+        expect(response.status).toBe(200);
+        expect(response.body.meta.pagination.page).toBe(1);
+        expect(response.body.meta.pagination.limit).toBe(20);
+      });
+
+      it('should cap limit at 100', async () => {
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: { id: mockManagerProfile.id, email: mockManagerProfile.email } },
+          error: null
+        });
+
+        supabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({
+                data: mockManagerProfile,
+                error: null
+              })
+            }),
+            order: jest.fn().mockReturnValue({
+              range: jest.fn().mockResolvedValue({
+                data: mockUsersList,
+                error: null,
+                count: 3
+              })
+            })
+          })
+        });
+
+        const response = await request(app)
+          .get('/api/v1/users?limit=500')
+          .set('Authorization', 'Bearer manager-token');
+
+        expect(response.status).toBe(200);
+        expect(response.body.meta.pagination.limit).toBe(100);
+      });
+
+      it('should ignore invalid role filter values', async () => {
+        supabase.auth.getUser.mockResolvedValue({
+          data: { user: { id: mockManagerProfile.id, email: mockManagerProfile.email } },
+          error: null
+        });
+
+        supabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({
+                data: mockManagerProfile,
+                error: null
+              })
+            }),
+            order: jest.fn().mockReturnValue({
+              range: jest.fn().mockResolvedValue({
+                data: mockUsersList,
+                error: null,
+                count: 3
+              })
+            })
+          })
+        });
+
+        const response = await request(app)
+          .get('/api/v1/users?role=invalid_role')
+          .set('Authorization', 'Bearer manager-token');
+
+        // Should still return 200, just ignore invalid filter
+        expect(response.status).toBe(200);
+      });
+    });
+  });
 });

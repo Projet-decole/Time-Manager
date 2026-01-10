@@ -3,6 +3,7 @@
 const { supabase } = require('../utils/supabase');
 const AppError = require('../utils/AppError');
 const { snakeToCamel, camelToSnake } = require('../utils/transformers');
+const { parsePaginationParams, buildPaginationMeta } = require('../utils/pagination');
 
 /**
  * Get user profile by ID
@@ -66,4 +67,39 @@ const updateProfile = async (userId, updateData) => {
   return snakeToCamel(data);
 };
 
-module.exports = { getProfile, updateProfile };
+/**
+ * Get all users with pagination and filtering
+ * @param {Object} filters - Filter options { role?: string }
+ * @param {Object} pagination - Pagination options { page?: number, limit?: number }
+ * @returns {Promise<Object>} { data: User[], pagination: PaginationMeta }
+ * @throws {AppError} If database query fails
+ */
+const getAllUsers = async (filters = {}, pagination = {}) => {
+  const { page, limit, offset } = parsePaginationParams(pagination);
+
+  let query = supabase
+    .from('profiles')
+    .select('id, email, first_name, last_name, role, weekly_hours_target, created_at, updated_at', { count: 'exact' });
+
+  // Apply role filter if provided and valid
+  const validRoles = ['employee', 'manager'];
+  if (filters.role && validRoles.includes(filters.role)) {
+    query = query.eq('role', filters.role);
+  }
+
+  const { data, error, count } = await query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    console.error('[USERS] Get all users failed:', { error: error.message });
+    throw new AppError('Failed to retrieve users', 500, 'DATABASE_ERROR');
+  }
+
+  return {
+    data: (data || []).map(snakeToCamel),
+    pagination: buildPaginationMeta(page, limit, count || 0)
+  };
+};
+
+module.exports = { getProfile, updateProfile, getAllUsers };
