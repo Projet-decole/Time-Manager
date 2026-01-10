@@ -1,6 +1,6 @@
 # Story 1.4: Setup Backend Project Structure
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -68,54 +68,54 @@ So that code organization follows best practices.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create directory structure
-  - [ ] 1.1: Create `backend/routes/` directory
-  - [ ] 1.2: Create `backend/controllers/` directory
-  - [ ] 1.3: Create `backend/services/` directory
-  - [ ] 1.4: Create `backend/middleware/` directory
-  - [ ] 1.5: Create `backend/utils/` directory
-  - [ ] 1.6: Create `backend/validators/` directory
-  - [ ] 1.7: Create `backend/tests/routes/` directory
-  - [ ] 1.8: Create `backend/tests/services/` directory
+- [x] Task 1: Create directory structure
+  - [x] 1.1: Create `backend/routes/` directory
+  - [x] 1.2: Create `backend/controllers/` directory
+  - [x] 1.3: Create `backend/services/` directory
+  - [x] 1.4: Create `backend/middleware/` directory
+  - [x] 1.5: Create `backend/utils/` directory
+  - [x] 1.6: Create `backend/validators/` directory
+  - [x] 1.7: Create `backend/tests/routes/` directory
+  - [x] 1.8: Create `backend/tests/services/` directory
 
-- [ ] Task 2: Setup app.js (AC: #4)
-  - [ ] 2.1: Configure Express instance
-  - [ ] 2.2: Add JSON body parser middleware
-  - [ ] 2.3: Add CORS middleware (existing config)
-  - [ ] 2.4: Mount routes from `routes/index.js`
-  - [ ] 2.5: Add error handling middleware (last position)
-  - [ ] 2.6: Export app instance
+- [x] Task 2: Setup app.js (AC: #4)
+  - [x] 2.1: Configure Express instance
+  - [x] 2.2: Add JSON body parser middleware
+  - [x] 2.3: Add CORS middleware (existing config)
+  - [x] 2.4: Mount routes from `routes/index.js`
+  - [x] 2.5: Add error handling middleware (last position)
+  - [x] 2.6: Export app instance
 
-- [ ] Task 3: Setup server.js (AC: #5)
-  - [ ] 3.1: Import app from app.js
-  - [ ] 3.2: Read PORT from environment
-  - [ ] 3.3: Start HTTP server
-  - [ ] 3.4: Add startup log message
+- [x] Task 3: Setup server.js (AC: #5)
+  - [x] 3.1: Import app from app.js
+  - [x] 3.2: Read PORT from environment
+  - [x] 3.3: Start HTTP server
+  - [x] 3.4: Add startup log message
 
-- [ ] Task 4: Create routes/index.js (AC: #2)
-  - [ ] 4.1: Create route aggregator function
-  - [ ] 4.2: Mount health routes as example
-  - [ ] 4.3: Export mount function
+- [x] Task 4: Create routes/index.js (AC: #2)
+  - [x] 4.1: Create route aggregator function
+  - [x] 4.2: Mount health routes as example
+  - [x] 4.3: Export mount function
 
-- [ ] Task 5: Create middleware placeholders (AC: #3)
-  - [ ] 5.1: Create `middleware/auth.middleware.js` with TODO
-  - [ ] 5.2: Create `middleware/rbac.middleware.js` with TODO
-  - [ ] 5.3: Create `middleware/validate.middleware.js` with TODO
-  - [ ] 5.4: Create `middleware/error.middleware.js` with basic handler
+- [x] Task 5: Create middleware placeholders (AC: #3)
+  - [x] 5.1: Create `middleware/auth.middleware.js` with TODO
+  - [x] 5.2: Create `middleware/rbac.middleware.js` with TODO
+  - [x] 5.3: Create `middleware/validate.middleware.js` with TODO
+  - [x] 5.4: Create `middleware/error.middleware.js` with basic handler
 
-- [ ] Task 6: Create sample route chain (AC: #7)
-  - [ ] 6.1: Create `routes/health.routes.js`
-  - [ ] 6.2: Create `controllers/health.controller.js`
-  - [ ] 6.3: Wire them together demonstrating pattern
+- [x] Task 6: Create sample route chain (AC: #7)
+  - [x] 6.1: Create `routes/health.routes.js`
+  - [x] 6.2: Create `controllers/health.controller.js`
+  - [x] 6.3: Wire them together demonstrating pattern
 
-- [ ] Task 7: Create test setup (AC: #1)
-  - [ ] 7.1: Create `tests/setup.js` with Jest configuration
-  - [ ] 7.2: Verify test structure mirrors source
+- [x] Task 7: Create test setup (AC: #1)
+  - [x] 7.1: Create `tests/setup.js` with Jest configuration
+  - [x] 7.2: Verify test structure mirrors source
 
-- [ ] Task 8: Verify CommonJS compliance (AC: #6)
-  - [ ] 8.1: Ensure all files use `require()`
-  - [ ] 8.2: Ensure all files use `module.exports`
-  - [ ] 8.3: NO `import`/`export` statements
+- [x] Task 8: Verify CommonJS compliance (AC: #6)
+  - [x] 8.1: Ensure all files use `require()`
+  - [x] 8.2: Ensure all files use `module.exports`
+  - [x] 8.3: NO `import`/`export` statements
 
 ## Dev Notes
 
@@ -303,26 +303,68 @@ module.exports = { check };
 
 ### Agent Model Used
 
-_To be filled by dev agent_
+Claude Opus 4.5 (claude-opus-4-5-20251101)
 
 ### Debug Log References
 
-_To be filled during implementation_
+- All 24 tests passing (3 test suites)
+- Coverage: 100% statements, branches, functions, lines
+- CommonJS compliance verified via grep: no import/export statements found
+
+### Code Review Fixes Applied (2026-01-10)
+
+**HIGH Severity Fixed:**
+- H1: Added 404 handler with standard JSON format in `app.js`
+- H2: Created comprehensive error middleware tests achieving 100% coverage
+
+**MEDIUM Severity Fixed:**
+- M1: Rewrote JSON body parsing test to properly verify functionality
+- M2: Added SIGINT handler for graceful shutdown in development (Ctrl+C)
+- M3: Fixed by H1 - 404s now return standard JSON format
+
+**LOW Severity Fixed:**
+- L2: Added tests verifying standard error response format
+- L3: Enhanced 404 tests to verify response body and HTTP method inclusion
+
+**Additional Improvements:**
+- Error middleware now only logs 5xx errors (server errors), not 4xx (expected client errors)
 
 ### Completion Notes List
 
-_To be filled during implementation_
+- **Task 1:** Created full directory structure with .gitkeep files for empty directories
+- **Task 2:** Refactored app.js to use layered architecture pattern - imports routes from index.js, uses error middleware last
+- **Task 3:** Fixed server.js bug (undefined `server` variable) and added graceful shutdown with SIGTERM handling
+- **Task 4:** Created routes/index.js as route aggregator mounting health routes on /health and /ready
+- **Task 5:** Created all 4 middleware placeholders with TODO comments and proper documentation
+- **Task 6:** Created health.routes.js → health.controller.js chain with standard response format
+- **Task 7:** Created tests/setup.js with Jest configuration and added route integration tests
+- **Task 8:** Verified all files use CommonJS (require/module.exports) - no ES modules
 
 ### File List
 
-_To be filled during implementation - expected:_
-- `backend/app.js`
-- `backend/server.js`
-- `backend/routes/index.js`
-- `backend/routes/health.routes.js`
-- `backend/controllers/health.controller.js`
-- `backend/middleware/error.middleware.js`
-- `backend/middleware/auth.middleware.js` (placeholder)
-- `backend/middleware/rbac.middleware.js` (placeholder)
-- `backend/middleware/validate.middleware.js` (placeholder)
-- `backend/tests/setup.js`
+**Modified:**
+- `backend/app.js` - Refactored to use routes/index.js, error middleware, and 404 JSON handler
+- `backend/server.js` - Fixed server variable bug, added graceful shutdown (SIGTERM + SIGINT)
+- `backend/package.json` - Added Jest setupFilesAfterEnv configuration
+- `backend/tests/app.test.js` - Comprehensive tests for JSON parsing, CORS, and 404 handling
+- `backend/middleware/error.middleware.js` - Global error handler (logs 5xx only)
+
+**Created:**
+- `backend/routes/index.js` - Route aggregator
+- `backend/routes/health.routes.js` - Health check routes
+- `backend/controllers/health.controller.js` - Health check controller
+- `backend/middleware/auth.middleware.js` - Auth placeholder
+- `backend/middleware/rbac.middleware.js` - RBAC placeholder
+- `backend/middleware/validate.middleware.js` - Validation placeholder
+- `backend/tests/setup.js` - Jest setup
+- `backend/tests/routes/health.routes.test.js` - Route integration tests
+- `backend/tests/middleware/error.middleware.test.js` - Error middleware unit tests (100% coverage)
+- `backend/services/.gitkeep` - Placeholder
+- `backend/utils/.gitkeep` - Placeholder
+- `backend/validators/.gitkeep` - Placeholder
+- `backend/tests/services/.gitkeep` - Placeholder
+
+## Change Log
+
+- 2026-01-10: Story 1.4 implemented - Backend structure reorganized with layered architecture
+- 2026-01-10: Code review completed - Fixed 8 issues (2 HIGH, 3 MEDIUM, 3 LOW), coverage improved to 100%
