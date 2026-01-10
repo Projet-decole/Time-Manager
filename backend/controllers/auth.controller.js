@@ -17,4 +17,19 @@ const login = async (req, res) => {
   return successResponse(res, result);
 };
 
-module.exports = { login };
+/**
+ * Handle user logout
+ * @route POST /api/v1/auth/logout
+ * @param {Request} req - Express request (requires valid Authorization header)
+ * @param {Response} res - Express response
+ */
+const logout = async (req, res) => {
+  // Extract access token from Authorization header (validated by auth middleware)
+  const accessToken = req.accessToken;
+
+  const result = await authService.logout(accessToken);
+
+  return successResponse(res, result);
+};
+
+module.exports = { login, logout };

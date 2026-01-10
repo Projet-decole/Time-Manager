@@ -8,11 +8,17 @@ jest.mock('../../utils/supabase', () => ({
     },
     from: jest.fn()
   },
-  supabaseAdmin: null,
+  supabaseAdmin: {
+    auth: {
+      admin: {
+        signOut: jest.fn()
+      }
+    }
+  },
   validateEnvVars: jest.fn()
 }));
 
-const { supabase } = require('../../utils/supabase');
+const { supabase, supabaseAdmin } = require('../../utils/supabase');
 const authService = require('../../services/auth.service');
 const AppError = require('../../utils/AppError');
 
@@ -236,6 +242,70 @@ describe('Auth Service', () => {
       await expect(authService.login('test@example.com', 'password123'))
         .rejects
         .toThrow('Database error');
+    });
+  });
+
+  describe('logout', () => {
+    const mockAccessToken = 'mock-valid-access-token-jwt';
+
+    it('should return success message on successful logout', async () => {
+      supabaseAdmin.auth.admin.signOut.mockResolvedValue({
+        error: null
+      });
+
+      const result = await authService.logout(mockAccessToken);
+
+      expect(result).toEqual({ message: 'Logged out successfully' });
+    });
+
+    it('should call supabaseAdmin.auth.admin.signOut with token and global scope', async () => {
+      supabaseAdmin.auth.admin.signOut.mockResolvedValue({
+        error: null
+      });
+
+      await authService.logout(mockAccessToken);
+
+      expect(supabaseAdmin.auth.admin.signOut).toHaveBeenCalledTimes(1);
+      expect(supabaseAdmin.auth.admin.signOut).toHaveBeenCalledWith(mockAccessToken, 'global');
+    });
+
+    it('should throw AppError with LOGOUT_FAILED when signOut fails', async () => {
+      supabaseAdmin.auth.admin.signOut.mockResolvedValue({
+        error: { message: 'Failed to sign out' }
+      });
+
+      await expect(authService.logout(mockAccessToken)).rejects.toMatchObject({
+        statusCode: 500,
+        code: 'LOGOUT_FAILED'
+      });
+    });
+
+    it('should throw AppError with INVALID_REQUEST when accessToken is null', async () => {
+      await expect(authService.logout(null)).rejects.toMatchObject({
+        statusCode: 400,
+        code: 'INVALID_REQUEST'
+      });
+    });
+
+    it('should throw AppError with INVALID_REQUEST when accessToken is undefined', async () => {
+      await expect(authService.logout(undefined)).rejects.toMatchObject({
+        statusCode: 400,
+        code: 'INVALID_REQUEST'
+      });
+    });
+
+    it('should throw AppError with INVALID_REQUEST when accessToken is empty string', async () => {
+      await expect(authService.logout('')).rejects.toMatchObject({
+        statusCode: 400,
+        code: 'INVALID_REQUEST'
+      });
+    });
+
+    it('should throw AppError with INVALID_REQUEST when accessToken is whitespace only', async () => {
+      await expect(authService.logout('   ')).rejects.toMatchObject({
+        statusCode: 400,
+        code: 'INVALID_REQUEST'
+      });
     });
   });
 });

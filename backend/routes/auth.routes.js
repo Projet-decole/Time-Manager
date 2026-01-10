@@ -4,6 +4,7 @@ const express = require('express');
 const authController = require('../controllers/auth.controller');
 const asyncHandler = require('../utils/asyncHandler');
 const { loginSchema, validate } = require('../validators/auth.validator');
+const { authenticate } = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
@@ -13,5 +14,12 @@ const router = express.Router();
  * @access  Public
  */
 router.post('/login', validate(loginSchema), asyncHandler(authController.login));
+
+/**
+ * @route   POST /api/v1/auth/logout
+ * @desc    Invalidate user session
+ * @access  Private (requires authentication)
+ */
+router.post('/logout', authenticate, asyncHandler(authController.logout));
 
 module.exports = router;

@@ -11,11 +11,17 @@ jest.mock('../../utils/supabase', () => ({
     },
     from: jest.fn()
   },
-  supabaseAdmin: null,
+  supabaseAdmin: {
+    auth: {
+      admin: {
+        signOut: jest.fn()
+      }
+    }
+  },
   validateEnvVars: jest.fn()
 }));
 
-const { supabase } = require('../../utils/supabase');
+const { supabase, supabaseAdmin } = require('../../utils/supabase');
 
 describe('Auth Routes', () => {
   beforeEach(() => {
@@ -280,6 +286,83 @@ describe('Auth Routes', () => {
         role: 'employee',
         weeklyHoursTarget: 35
       });
+    });
+  });
+
+  describe('POST /api/v1/auth/logout', () => {
+    it('should return 200 with success message on successful logout (AC #1)', async () => {
+      // Mock successful admin signOut
+      supabaseAdmin.auth.admin.signOut.mockResolvedValue({
+        error: null
+      });
+
+      const response = await request(app)
+        .post('/api/v1/auth/logout')
+        .set('Authorization', 'Bearer mock-valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toEqual({
+        message: 'Logged out successfully'
+      });
+    });
+
+    it('should call supabaseAdmin.auth.admin.signOut with token and global scope (AC #1)', async () => {
+      supabaseAdmin.auth.admin.signOut.mockResolvedValue({
+        error: null
+      });
+
+      await request(app)
+        .post('/api/v1/auth/logout')
+        .set('Authorization', 'Bearer mock-valid-token');
+
+      // The middleware extracts the token from Authorization header
+      expect(supabaseAdmin.auth.admin.signOut).toHaveBeenCalledTimes(1);
+      expect(supabaseAdmin.auth.admin.signOut).toHaveBeenCalledWith('mock-valid-token', 'global');
+    });
+
+    it('should return 500 when signOut fails', async () => {
+      supabaseAdmin.auth.admin.signOut.mockResolvedValue({
+        error: { message: 'Failed to sign out' }
+      });
+
+      const response = await request(app)
+        .post('/api/v1/auth/logout')
+        .set('Authorization', 'Bearer mock-valid-token');
+
+      expect(response.status).toBe(500);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toHaveProperty('code', 'LOGOUT_FAILED');
+    });
+
+    it('should return 401 without Authorization header (AC #3)', async () => {
+      // When no Authorization header, middleware returns 401 UNAUTHORIZED
+      const response = await request(app)
+        .post('/api/v1/auth/logout');
+
+      expect(response.status).toBe(401);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
+    });
+
+    it('should return 401 with empty Bearer token (AC #3)', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/logout')
+        .set('Authorization', 'Bearer ');
+
+      expect(response.status).toBe(401);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
+    });
+
+    it('should return 401 with invalid Authorization format (AC #3)', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/logout')
+        .set('Authorization', 'Basic sometoken');
+
+      expect(response.status).toBe(401);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
     });
   });
 });
