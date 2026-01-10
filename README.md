@@ -1,6 +1,10 @@
 # Time Manager
 
-Application de gestion du temps construite avec React, Express et Supabase. Architecture monorepo avec npm workspaces, Docker, tests automatisés et CI/CD.
+Application de gestion du temps pour les employés et managers. Permet de pointer les arrivées/départs, gérer les équipes et visualiser des KPIs de productivité.
+
+**Stack** : React + Express + Supabase | Architecture monorepo avec npm workspaces, Docker, tests automatisés et CI/CD.
+
+> **Statut du projet** : Phase de planification terminée. Architecture et spécifications validées, implémentation à venir.
 
 ## Démarrage rapide
 
@@ -79,18 +83,24 @@ Time-Manager/
 │   ├── nginx.conf            # Configuration Nginx (production)
 │   └── package.json          # Dépendances frontend
 │
+├── _bmad-output/             # Artefacts de planification (BMAD)
+│   └── planning-artifacts/   # Documents validés
+│       ├── architecture.md   # Architecture technique
+│       ├── prd.md            # Product Requirements Document
+│       └── ...               # Autres documents de planification
+│
+├── docs/                     # Documentation technique
+│   ├── DOCKER.md             # Guide Docker complet
+│   ├── CI-CD.md              # Pipeline CI/CD, Git hooks
+│   ├── TESTS.md              # Framework de tests, bonnes pratiques
+│   └── Time-manager.md       # Cahier des charges académique
+│
 ├── .husky/                   # Git hooks
 │   ├── pre-commit            # Lint + tests rapides
 │   └── pre-push              # Tests complets
 │
 ├── .github/workflows/        # CI/CD GitHub Actions
 │   └── ci-cd.yml             # Pipeline automatisé
-│
-├── Docs/                     # Documentation
-│   ├── ARCHITECTURE.md       # Choix techniques, architecture monorepo
-│   ├── DOCKER.md             # Guide Docker complet
-│   ├── CI-CD.md              # Pipeline CI/CD, Git hooks
-│   └── TESTS.md              # Framework de tests, bonnes pratiques
 │
 ├── docker-compose.dev.yml    # Orchestration développement
 └── docker-compose.prod.yml   # Orchestration production
@@ -236,12 +246,21 @@ username/time-manager-frontend:latest
 
 ## Documentation
 
+### Architecture et planification
+
 | Fichier | Description |
 |---------|-------------|
-| **[ARCHITECTURE.md](Docs/ARCHITECTURE.md)** | Architecture monorepo, workspaces npm, choix techniques, flux de données, environnements dev/prod |
-| **[DOCKER.md](Docs/DOCKER.md)** | Guide complet Docker : Dockerfiles expliqués, docker-compose, workflows, troubleshooting |
-| **[CI-CD.md](Docs/CI-CD.md)** | Pipeline GitHub Actions, Git hooks Husky, phases tests/build, bonnes pratiques |
-| **[TESTS.md](Docs/TESTS.md)** | Framework de tests (Vitest, Jest), écrire des tests, bonnes pratiques, troubleshooting |
+| **[Architecture](_bmad-output/planning-artifacts/architecture.md)** | Architecture technique validée : décisions clés, composants, API, sécurité, déploiement |
+| **[PRD](_bmad-output/planning-artifacts/prd.md)** | Product Requirements Document : fonctionnalités, user stories, critères d'acceptation |
+
+### Guides techniques
+
+| Fichier | Description |
+|---------|-------------|
+| **[DOCKER.md](docs/DOCKER.md)** | Guide complet Docker : Dockerfiles expliqués, docker-compose, workflows, troubleshooting |
+| **[CI-CD.md](docs/CI-CD.md)** | Pipeline GitHub Actions, Git hooks Husky, phases tests/build, bonnes pratiques |
+| **[TESTS.md](docs/TESTS.md)** | Framework de tests (Vitest, Jest), écrire des tests, bonnes pratiques, troubleshooting |
+| **[Cahier des charges](docs/Time-manager.md)** | Spécifications académiques du projet (critères d'évaluation) |
 
 ## Troubleshooting
 
@@ -334,4 +353,4 @@ docs(readme): update installation instructions
 
 ---
 
-Pour plus de détails, consultez la [documentation complète](Docs/).
+Pour plus de détails, consultez la [documentation technique](docs/) et les [artefacts de planification](_bmad-output/planning-artifacts/).
