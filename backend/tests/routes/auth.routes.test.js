@@ -7,7 +7,8 @@ const app = require('../../app');
 jest.mock('../../utils/supabase', () => ({
   supabase: {
     auth: {
-      signInWithPassword: jest.fn()
+      signInWithPassword: jest.fn(),
+      getUser: jest.fn()
     },
     from: jest.fn()
   },
@@ -290,7 +291,41 @@ describe('Auth Routes', () => {
   });
 
   describe('POST /api/v1/auth/logout', () => {
+    const mockUser = {
+      id: 'user-uuid-123',
+      email: 'test@example.com'
+    };
+
+    const mockProfile = {
+      first_name: 'John',
+      last_name: 'Doe',
+      role: 'employee',
+      weekly_hours_target: 35
+    };
+
+    // Helper to setup successful authentication mocks
+    const setupAuthMocks = () => {
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null
+      });
+
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockProfile,
+              error: null
+            })
+          })
+        })
+      });
+    };
+
     it('should return 200 with success message on successful logout (AC #1)', async () => {
+      // Mock successful auth middleware
+      setupAuthMocks();
+
       // Mock successful admin signOut
       supabaseAdmin.auth.admin.signOut.mockResolvedValue({
         error: null
@@ -308,6 +343,9 @@ describe('Auth Routes', () => {
     });
 
     it('should call supabaseAdmin.auth.admin.signOut with token and global scope (AC #1)', async () => {
+      // Mock successful auth middleware
+      setupAuthMocks();
+
       supabaseAdmin.auth.admin.signOut.mockResolvedValue({
         error: null
       });
@@ -322,6 +360,9 @@ describe('Auth Routes', () => {
     });
 
     it('should return 500 when signOut fails', async () => {
+      // Mock successful auth middleware
+      setupAuthMocks();
+
       supabaseAdmin.auth.admin.signOut.mockResolvedValue({
         error: { message: 'Failed to sign out' }
       });

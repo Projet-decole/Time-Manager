@@ -55,7 +55,7 @@ development_status:
     epic-2: in-progress
     2-1-implement-supabase-auth-integration: done
     2-2-implement-logout-endpoint: done
-    2-3-implement-authentication-middleware: ready-for-dev
+    2-3-implement-authentication-middleware: done
     2-4-implement-password-reset-flow: ready-for-dev
     2-5-implement-user-profile-endpoints: ready-for-dev
     2-6-implement-rbac-middleware: ready-for-dev

@@ -1,6 +1,6 @@
 # Story 2.3: Implement Authentication Middleware
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -30,25 +30,25 @@ So that protected routes are secured.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement authenticate middleware (AC: #1-4)
-  - [ ] Update `backend/middleware/auth.middleware.js`
-  - [ ] Extract Bearer token from Authorization header
-  - [ ] Validate token with supabase.auth.getUser(token)
-  - [ ] Fetch user profile from profiles table
-  - [ ] Attach user object to req.user
-  - [ ] Handle all error cases with AppError
+- [x] Task 1: Implement authenticate middleware (AC: #1-4)
+  - [x] Update `backend/middleware/auth.middleware.js`
+  - [x] Extract Bearer token from Authorization header
+  - [x] Validate token with supabase.auth.getUser(token)
+  - [x] Fetch user profile from profiles table
+  - [x] Attach user object to req.user
+  - [x] Handle all error cases with AppError
 
-- [ ] Task 2: Create middleware tests (AC: #1-4)
-  - [ ] Create `backend/tests/middleware/auth.middleware.test.js`
-  - [ ] Test valid token populates req.user
-  - [ ] Test missing header returns 401
-  - [ ] Test invalid token returns 401
-  - [ ] Test malformed header returns 401
-  - [ ] Test expired token returns 401
+- [x] Task 2: Create middleware tests (AC: #1-4)
+  - [x] Create `backend/tests/middleware/auth.middleware.test.js`
+  - [x] Test valid token populates req.user
+  - [x] Test missing header returns 401
+  - [x] Test invalid token returns 401
+  - [x] Test malformed header returns 401
+  - [x] Test expired token returns 401
 
-- [ ] Task 3: Apply to protected routes (AC: #1)
-  - [ ] Update logout route to use real authenticate middleware
-  - [ ] Document middleware usage pattern
+- [x] Task 3: Apply to protected routes (AC: #1)
+  - [x] Update logout route to use real authenticate middleware
+  - [x] Document middleware usage pattern
 
 ## Dev Notes
 
@@ -169,8 +169,57 @@ jest.mock('../utils/supabase', () => ({
 
 ### Agent Model Used
 
+Claude Opus 4.5 (claude-opus-4-5-20251101)
+
 ### Debug Log References
+
+- RED phase: Tests written first, all 17 middleware tests failing with placeholder implementation
+- GREEN phase: Implemented real Supabase authentication, all 17 tests passing
+- Full regression suite: 193/193 tests passing, 99.57% coverage
 
 ### Completion Notes List
 
+- Implemented `authenticate` middleware with Supabase token validation (`supabase.auth.getUser(token)`)
+- Middleware fetches user profile from `profiles` table to include role in `req.user`
+- Transforms snake_case profile fields to camelCase using existing `snakeToCamel` utility
+- Supports RFC 7235 case-insensitive Bearer scheme (Bearer, bearer, BEARER, etc.)
+- All error cases handled with AppError and passed to Express error middleware via `next(error)`
+- Updated auth.routes.test.js to mock `supabase.auth.getUser` for logout endpoint tests
+- req.user shape: `{ id, email, firstName, lastName, role, weeklyHoursTarget }`
+
 ### File List
+
+- `backend/middleware/auth.middleware.js` - MODIFIED: Replaced placeholder with real Supabase authentication + profile error logging
+- `backend/tests/middleware/auth.middleware.test.js` - MODIFIED: 18 comprehensive tests for all ACs (added profile error test)
+- `backend/tests/routes/auth.routes.test.js` - MODIFIED: Added getUser mock for auth middleware
+
+### Change Log
+
+| Date | Change |
+|------|--------|
+| 2026-01-10 | Implemented authentication middleware with Supabase token validation (Story 2.3) |
+| 2026-01-10 | Code Review: Fixed silent profile error handling (M1), added test for profile query failure (M2) |
+
+## Senior Developer Review (AI)
+
+**Reviewer:** Claude Opus 4.5
+**Date:** 2026-01-10
+**Outcome:** ✅ APPROVED (after fixes)
+
+### Issues Found & Fixed
+
+| ID | Severity | Description | Resolution |
+|----|----------|-------------|------------|
+| M1 | MEDIUM | Profile fetch errors silently ignored | Added `console.warn` logging |
+| M2 | MEDIUM | No test for profile query network failure | Added test case (18 tests now) |
+| M3 | MEDIUM | Double sequential DB calls (latency) | Noted for future optimization |
+
+### Notes for Future Optimization
+
+- Consider caching user profiles in-memory for frequently accessed users
+- Rate limiting on auth middleware could prevent brute force attacks
+
+### Verification
+
+- All 50 auth tests passing
+- auth.middleware.js: 100% coverage
