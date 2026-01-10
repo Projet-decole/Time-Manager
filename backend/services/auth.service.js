@@ -1,6 +1,6 @@
 // backend/services/auth.service.js
 
-const { supabase } = require('../utils/supabase');
+const { supabase, supabaseAdmin } = require('../utils/supabase');
 const AppError = require('../utils/AppError');
 const { snakeToCamel } = require('../utils/transformers');
 
@@ -62,4 +62,27 @@ const login = async (email, password) => {
   };
 };
 
-module.exports = { login };
+/**
+ * Sign out user and invalidate all sessions
+ * Uses admin API to ensure server-side session invalidation in stateless REST API
+ * @param {string} accessToken - The user's JWT access token
+ * @returns {Promise<Object>} Success message
+ * @throws {AppError} If logout fails or accessToken is missing
+ */
+const logout = async (accessToken) => {
+  if (!accessToken || (typeof accessToken === 'string' && !accessToken.trim())) {
+    throw new AppError('Access token is required for logout', 400, 'INVALID_REQUEST');
+  }
+
+  // Use admin API to invalidate all sessions for this user (global scope)
+  // This is required for stateless REST APIs where the server doesn't hold session state
+  const { error } = await supabaseAdmin.auth.admin.signOut(accessToken, 'global');
+
+  if (error) {
+    throw new AppError('Logout failed', 500, 'LOGOUT_FAILED');
+  }
+
+  return { message: 'Logged out successfully' };
+};
+
+module.exports = { login, logout };
