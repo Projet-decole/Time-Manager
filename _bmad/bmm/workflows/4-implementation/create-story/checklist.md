@@ -166,6 +166,30 @@ You will systematically re-do the entire story creation process, but with a crit
 - **Scope creep:** Missing boundaries that could cause unnecessary work
 - **Quality failures:** Missing quality requirements that could deliver broken features
 
+#### **3.6 Frontend/Backend Balance DISASTERS**
+
+- **Backend-heavy epic:** Check if epic has >3:1 backend:frontend story ratio - flag for review
+- **Missing frontend consumer:** Backend API created without identified frontend story that will use it
+- **Orphan UI:** Frontend story created without backend endpoints being ready
+- **Missing integration story:** Backend and frontend exist but no story explicitly connects them
+- **No balance section:** Story file missing "Frontend/Backend Balance" section entirely
+
+#### **3.7 E2E Testing DISASTERS**
+
+- **No E2E section:** Story file missing "E2E Testing Notes" section entirely
+- **Vague E2E:** E2E section exists but has no concrete test commands or steps
+- **Untestable ACs:** Acceptance criteria that cannot be verified end-to-end
+- **Missing prerequisites:** No mention of test data, auth tokens, or role requirements
+- **No curl/Playwright examples:** Backend stories without curl commands or frontend without UI test steps
+
+#### **3.8 User-Centric Feedback DISASTERS**
+
+- **No user value section:** Story missing "What User Can Do After This Story" section
+- **Infrastructure-only not flagged:** Backend-only story without explicit "Infrastructure only" note
+- **Missing manual test steps:** No concrete steps for user/QA to manually verify the feature
+- **Vague user value:** User section exists but doesn't describe concrete actions users can take
+- **Epic completion unclear:** After all epic stories, unclear what complete user journey is enabled
+
 ### **Step 4: LLM-Dev-Agent Optimization Analysis**
 
 **CRITICAL STEP: Optimize story context for LLM developer agent consumption**
@@ -216,6 +240,18 @@ You will systematically re-do the entire story creation process, but with a crit
 - Clearer structure for LLM processing
 - More actionable and direct instructions
 - Reduced verbosity while maintaining completeness
+
+#### **5.5 Frontend/Backend/E2E/User Feedback Improvements**
+
+- Missing "What User Can Do After This Story" section - add concrete user actions
+- Missing "E2E Testing Notes" section - add test commands and scenarios
+- Missing "Frontend/Backend Balance" section - add explicit coverage analysis
+- Backend story without identified frontend consumer - flag which story will add UI
+- Frontend story without E2E test scenarios - add Playwright/Cypress steps
+- Epic without clear user journey completion summary - add epic summary in last story
+- Vague user value description - rewrite with concrete, testable user actions
+- Missing curl commands for backend API testing - add example requests
+- No prerequisites listed - add auth token, test data, role requirements
 
 ---
 
