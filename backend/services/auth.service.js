@@ -85,4 +85,25 @@ const logout = async (accessToken) => {
   return { message: 'Logged out successfully' };
 };
 
-module.exports = { login, logout };
+/**
+ * Request password reset email
+ * Always returns success to prevent email enumeration
+ * @param {string} email - User email
+ * @returns {Promise<Object>} Success message
+ */
+const forgotPassword = async (email) => {
+  // Always attempt reset - Supabase handles non-existent emails gracefully
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password`
+  });
+
+  // Log error for debugging but don't expose to user
+  if (error) {
+    console.error('[AUTH] Password reset error:', error.message);
+  }
+
+  // Always return success to prevent email enumeration
+  return { message: 'If an account exists, a reset email has been sent' };
+};
+
+module.exports = { login, logout, forgotPassword };

@@ -32,4 +32,18 @@ const logout = async (req, res) => {
   return successResponse(res, result);
 };
 
-module.exports = { login, logout };
+/**
+ * Handle forgot password request
+ * @route POST /api/v1/auth/forgot-password
+ * @param {Request} req - Express request with validatedBody { email }
+ * @param {Response} res - Express response
+ */
+const forgotPassword = async (req, res) => {
+  const { email } = req.validatedBody;
+
+  const result = await authService.forgotPassword(email);
+
+  return successResponse(res, result);
+};
+
+module.exports = { login, logout, forgotPassword };

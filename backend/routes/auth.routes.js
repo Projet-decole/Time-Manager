@@ -3,7 +3,7 @@
 const express = require('express');
 const authController = require('../controllers/auth.controller');
 const asyncHandler = require('../utils/asyncHandler');
-const { loginSchema, validate } = require('../validators/auth.validator');
+const { loginSchema, forgotPasswordSchema, validate } = require('../validators/auth.validator');
 const { authenticate } = require('../middleware/auth.middleware');
 
 const router = express.Router();
@@ -21,5 +21,12 @@ router.post('/login', validate(loginSchema), asyncHandler(authController.login))
  * @access  Private (requires authentication)
  */
 router.post('/logout', authenticate, asyncHandler(authController.logout));
+
+/**
+ * @route   POST /api/v1/auth/forgot-password
+ * @desc    Request password reset email
+ * @access  Public
+ */
+router.post('/forgot-password', validate(forgotPasswordSchema), asyncHandler(authController.forgotPassword));
 
 module.exports = router;

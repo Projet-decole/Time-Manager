@@ -16,6 +16,16 @@ const loginSchema = z.object({
 });
 
 /**
+ * Forgot password request validation schema
+ * Validates email format only
+ */
+const forgotPasswordSchema = z.object({
+  email: z
+    .string({ required_error: 'Email is required' })
+    .email('Invalid email format')
+});
+
+/**
  * Validate request body against a Zod schema
  * @param {z.ZodSchema} schema - Zod schema to validate against
  * @returns {Function} Express middleware function
@@ -51,5 +61,6 @@ const validate = (schema) => {
 
 module.exports = {
   loginSchema,
+  forgotPasswordSchema,
   validate
 };

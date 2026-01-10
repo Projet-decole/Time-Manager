@@ -56,7 +56,7 @@ development_status:
     2-1-implement-supabase-auth-integration: done
     2-2-implement-logout-endpoint: done
     2-3-implement-authentication-middleware: done
-    2-4-implement-password-reset-flow: ready-for-dev
+    2-4-implement-password-reset-flow: done
     2-5-implement-user-profile-endpoints: ready-for-dev
     2-6-implement-rbac-middleware: ready-for-dev
     2-7-implement-users-list-endpoint-manager-only: ready-for-dev

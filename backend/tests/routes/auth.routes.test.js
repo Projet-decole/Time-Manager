@@ -8,7 +8,8 @@ jest.mock('../../utils/supabase', () => ({
   supabase: {
     auth: {
       signInWithPassword: jest.fn(),
-      getUser: jest.fn()
+      getUser: jest.fn(),
+      resetPasswordForEmail: jest.fn()
     },
     from: jest.fn()
   },
@@ -404,6 +405,107 @@ describe('Auth Routes', () => {
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
       expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
+    });
+  });
+
+  describe('POST /api/v1/auth/forgot-password', () => {
+    it('should return 200 with success message for valid registered email (AC #1)', async () => {
+      // Mock successful password reset
+      supabase.auth.resetPasswordForEmail.mockResolvedValue({
+        error: null
+      });
+
+      const response = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'registered@example.com' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('message');
+      expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+        'registered@example.com',
+        expect.objectContaining({ redirectTo: expect.any(String) })
+      );
+    });
+
+    it('should return 200 with success message for unregistered email - no enumeration (AC #2)', async () => {
+      // Mock Supabase returning error for non-existent email
+      supabase.auth.resetPasswordForEmail.mockResolvedValue({
+        error: { message: 'User not found' }
+      });
+
+      const response = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'nonexistent@example.com' });
+
+      // Should still return 200 to prevent email enumeration
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('message');
+    });
+
+    it('should return 400 with VALIDATION_ERROR for invalid email format (AC #3)', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'invalid-email' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      expect(response.body.error.details).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            field: 'email',
+            message: 'Invalid email format'
+          })
+        ])
+      );
+    });
+
+    it('should return 400 with VALIDATION_ERROR when email is missing', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      expect(response.body.error.details).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: 'email' })
+        ])
+      );
+    });
+
+    it('should not require authentication', async () => {
+      supabase.auth.resetPasswordForEmail.mockResolvedValue({
+        error: null
+      });
+
+      // No Authorization header - should still work
+      const response = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'test@example.com' });
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should return 400 with VALIDATION_ERROR when email is empty string', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: '' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      expect(response.body.error.details).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            field: 'email',
+            message: 'Invalid email format'
+          })
+        ])
+      );
     });
   });
 });
