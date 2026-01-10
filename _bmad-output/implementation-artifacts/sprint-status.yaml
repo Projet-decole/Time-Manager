@@ -64,7 +64,7 @@ development_status:
     2-7-implement-users-list-endpoint: done
     # Frontend stories
     2-8-setup-frontend-auth-infrastructure: done
-    2-9-implement-auth-pages: ready-for-dev
+    2-9-implement-auth-pages: done
     2-10-implement-reset-password-page: ready-for-dev
     2-11-implement-profile-page: ready-for-dev
     2-12-implement-protected-routes-and-navigation: ready-for-dev
