@@ -41,14 +41,14 @@ story_location: "{project-root}/_bmad-output/implementation-artifacts"
 
 development_status:
     # Epic 1: Foundation & Database Setup (7 stories)
-    epic-1: in-progress
+    epic-1: done
     1-1-create-core-database-schema: done
     1-2-create-time-tracking-database-tables: done
     1-3-configure-row-level-security-policies: done
     1-4-setup-backend-project-structure: done
     1-5-implement-core-backend-utilities: done
     1-6-implement-global-error-handling-middleware: done
-    1-7-implement-health-check-endpoints: ready-for-dev
+    1-7-implement-health-check-endpoints: done
     epic-1-retrospective: optional
 
     # Epic 2: Authentication & Authorization (10 stories)
