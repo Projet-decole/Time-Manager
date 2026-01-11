@@ -76,7 +76,7 @@ development_status:
     # Epic 3: Admin Data Management (8 stories)
     epic-3: in-progress
     3-1-implement-teams-crud-api: done
-    3-2-implement-team-member-assignment-api: review
+    3-2-implement-team-member-assignment-api: done
     3-3-implement-projects-crud-api: review
     3-4-implement-team-project-assignment-api: review
     3-5-implement-categories-crud-api: review
