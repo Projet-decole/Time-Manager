@@ -77,9 +77,9 @@ development_status:
     epic-3: in-progress
     3-1-implement-teams-crud-api: done
     3-2-implement-team-member-assignment-api: done
-    3-3-implement-projects-crud-api: review
-    3-4-implement-team-project-assignment-api: review
-    3-5-implement-categories-crud-api: review
+    3-3-implement-projects-crud-api: done
+    3-4-implement-team-project-assignment-api: done
+    3-5-implement-categories-crud-api: done
     3-6-implement-admin-management-ui-teams: review
     3-7-implement-admin-management-ui-projects: review
     3-8-implement-admin-management-ui-categories: review
