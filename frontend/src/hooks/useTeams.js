@@ -188,7 +188,17 @@ export const useTeamDetails = (teamId) => {
       if (!isMountedRef.current) return;
 
       if (response.success) {
-        setMembers(response.data || []);
+        // Flatten nested user data: { user: { firstName, ... } } -> { firstName, ... }
+        // Use user.id as id since removeMember expects userId
+        const flattenedMembers = (response.data || []).map(member => ({
+          id: member.user?.id || member.userId,
+          membershipId: member.id,
+          firstName: member.user?.firstName || '',
+          lastName: member.user?.lastName || '',
+          email: member.user?.email || '',
+          role: member.user?.role || ''
+        }));
+        setMembers(flattenedMembers);
       } else {
         setMembersError('Erreur lors du chargement des membres');
       }
@@ -211,7 +221,18 @@ export const useTeamDetails = (teamId) => {
       if (!isMountedRef.current) return;
 
       if (response.success) {
-        setProjects(response.data || []);
+        // Flatten nested project data: { project: { name, ... } } -> { name, ... }
+        // Use project.id as id since unassignProject expects projectId
+        const flattenedProjects = (response.data || []).map(teamProject => ({
+          id: teamProject.project?.id || teamProject.projectId,
+          assignmentId: teamProject.id,
+          name: teamProject.project?.name || '',
+          code: teamProject.project?.code || '',
+          description: teamProject.project?.description || '',
+          status: teamProject.project?.status || '',
+          budgetHours: teamProject.project?.budgetHours || 0
+        }));
+        setProjects(flattenedProjects);
       } else {
         setProjectsError('Erreur lors du chargement des projets');
       }
