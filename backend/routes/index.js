@@ -3,6 +3,9 @@
 const healthRoutes = require('./health.routes');
 const authRoutes = require('./auth.routes');
 const usersRoutes = require('./users.routes');
+const teamsRoutes = require('./teams.routes');
+const categoriesRoutes = require('./categories.routes');
+const projectsRoutes = require('./projects.routes');
 const healthController = require('../controllers/health.controller');
 
 /**
@@ -20,6 +23,9 @@ const mountRoutes = (app) => {
   // API v1 routes
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/users', usersRoutes);
+  app.use('/api/v1/teams', teamsRoutes);
+  app.use('/api/v1/categories', categoriesRoutes);
+  app.use('/api/v1/projects', projectsRoutes);
 
   // Future API routes will be added here:
   // app.use('/api/v1/time-entries', timeEntriesRoutes);

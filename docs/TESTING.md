@@ -2,42 +2,139 @@
 
 ## Table des matières
 
-- [Tests automatisés](#tests-automatisés)
+- [Strategie de tests](#strategie-de-tests)
+- [Commandes de test](#commandes-de-test)
+- [Tests E2E (Playwright)](#tests-e2e-playwright)
 - [Tests manuels API](#tests-manuels-api)
 - [Utilisateurs de test](#utilisateurs-de-test)
 - [Seed de la base de données](#seed-de-la-base-de-données)
 
 ---
 
-## Tests automatisés
+## Strategie de tests
 
-### Backend (Jest)
+### Philosophie
+
+Les tests sont organises en **3 niveaux** correspondant au workflow de developpement :
+
+| Niveau | Quand | Quoi | Automatisation |
+|--------|-------|------|----------------|
+| **Story** | Pendant le dev d'une story | Tests unitaires cibles | Pre-commit (lint) |
+| **Epic** | Avant push (fin d'epic) | Suite complete + E2E | Pre-push + manuel |
+| **CI** | Apres push sur GitHub | Validation formelle | GitHub Actions |
+
+### Niveau 1 : Developpement Story
+
+**Objectif :** Feedback rapide, ne pas bloquer le developpeur.
+
+- Pre-commit : Lint uniquement (pas de tests)
+- Tests manuels selon besoin : `npm run test:unit`
+- Focus sur les nouvelles fonctionnalites
+
+### Niveau 2 : Fin d'Epic (avant push)
+
+**Objectif :** Validation complete avant de partager le code.
 
 ```bash
-# Depuis la racine du projet
-cd backend
-npm test
-
-# Avec couverture de code
-npm test -- --coverage
-
-# Via Docker
-docker-compose -f docker-compose.dev.yml exec -T backend-dev npm test
+# Commande unique pour tout valider
+npm run test:epic
 ```
 
-**Couverture cible:** >80%
+Cette commande execute sequentiellement :
+1. Tests unitaires backend + frontend
+2. Tests d'integration API
+3. Tests E2E (parcours critiques)
+4. Validation build Docker
 
-### Frontend (Vitest)
+### Niveau 3 : GitHub CI
+
+**Objectif :** Formalite pour autoriser le merge sur main.
+
+- Identique au niveau 2
+- Build et push des images Docker
+- Declenchement du deploiement Render
+
+---
+
+## Commandes de test
+
+### Depuis la racine du projet
 
 ```bash
-cd frontend
-npm test
+# Tests unitaires rapides (un seul workspace)
+npm run test:unit --workspace=backend
+npm run test:unit --workspace=frontend
 
-# Via Docker
+# Tests unitaires complets
+npm run test:unit
+
+# Tests d'integration API
+npm run test:integration
+
+# Tests E2E (Playwright)
+npm run test:e2e
+
+# Suite complete fin d'epic
+npm run test:epic
+
+# Avec couverture
+npm run test:coverage
+```
+
+### Via Docker
+
+```bash
+docker-compose -f docker-compose.dev.yml exec -T backend-dev npm test
 docker-compose -f docker-compose.dev.yml exec -T frontend-dev npm test
 ```
 
-**Couverture cible:** >60%
+### Couvertures cibles
+
+| Scope | Cible |
+|-------|-------|
+| Backend | >80% |
+| Frontend | >60% |
+
+---
+
+## Tests E2E (Playwright)
+
+### Installation
+
+```bash
+# Depuis la racine
+npm run test:e2e:install
+```
+
+### Parcours critiques testes
+
+| Parcours | Fichier | Description |
+|----------|---------|-------------|
+| Login | `e2e/auth.spec.ts` | Connexion/deconnexion |
+| Pointage | `e2e/timesheet.spec.ts` | Pointer une journee |
+| Dashboard | `e2e/dashboard.spec.ts` | Affichage tableau de bord |
+
+### Execution
+
+```bash
+# Tous les tests E2E
+npm run test:e2e
+
+# Mode interactif (debug)
+npm run test:e2e:ui
+
+# Un fichier specifique
+npx playwright test e2e/auth.spec.ts
+```
+
+### Configuration
+
+Fichier : `playwright.config.ts`
+
+```typescript
+// Les tests E2E necessitent que l'application soit demarree
+// Utilisez docker-compose.dev.yml ou demarrez manuellement
+```
 
 ---
 
@@ -280,4 +377,57 @@ env:
 
 ---
 
-**Dernière mise à jour:** 2026-01-10
+## Regles critiques - Patterns interdits
+
+> **IMPORTANT:** Ces patterns ont cause des crashs systeme. Ne JAMAIS les utiliser.
+
+### 1. Promesses infinies
+
+```javascript
+// INTERDIT - Bloque le processus indefiniment
+mockService.getAll.mockImplementation(() => new Promise(() => {}));
+
+// CORRECT - Promesse controlee
+let resolve;
+const promise = new Promise((r) => { resolve = r; });
+mockService.getAll.mockReturnValue(promise);
+// ... assertions ...
+resolve({ success: true, data: [] }); // Cleanup obligatoire
+```
+
+### 2. Fake timers avec shouldAdvanceTime
+
+```javascript
+// INTERDIT - Cascade infinie avec setTimeout des composants
+vi.useFakeTimers({ shouldAdvanceTime: true });
+
+// CORRECT - Utiliser les vrais timers pour les composants React
+// Ne pas utiliser vi.useFakeTimers() du tout
+```
+
+### 3. Fake timers + userEvent
+
+```javascript
+// INTERDIT
+vi.useFakeTimers();
+const user = userEvent.setup(); // Bloque
+
+// CORRECT
+const user = userEvent.setup(); // Sans fake timers
+```
+
+### Configuration obligatoire (vite.config.js)
+
+```javascript
+test: {
+  testTimeout: 10000,
+  hookTimeout: 10000,
+  teardownTimeout: 5000,
+}
+```
+
+Voir aussi: `docs/project-context.md` pour plus de details.
+
+---
+
+**Derniere mise a jour:** 2026-01-11

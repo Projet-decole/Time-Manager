@@ -20,8 +20,11 @@ import AccessDeniedPage from './pages/AccessDeniedPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 
-// Admin pages (placeholder for Story 2-13)
+// Admin pages
 import AdminUsersPage from './pages/AdminUsersPage';
+import ProjectsPage from './pages/admin/ProjectsPage';
+import CategoriesPage from './pages/admin/CategoriesPage';
+import TeamsPage from './pages/admin/TeamsPage';
 
 function App() {
   return (
@@ -46,6 +49,30 @@ function App() {
               element={
                 <RoleProtectedRoute roles={['manager']}>
                   <AdminUsersPage />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/categories"
+              element={
+                <RoleProtectedRoute roles={['manager']}>
+                  <CategoriesPage />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/projects"
+              element={
+                <RoleProtectedRoute roles={['manager']}>
+                  <ProjectsPage />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/teams"
+              element={
+                <RoleProtectedRoute roles={['manager']}>
+                  <TeamsPage />
                 </RoleProtectedRoute>
               }
             />

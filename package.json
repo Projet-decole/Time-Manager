@@ -8,19 +8,25 @@
 	"scripts": {
 		"prepare": "husky || true",
 		"test": "npm run test --workspaces",
+		"test:unit": "npm run test --workspaces -- --testPathIgnorePatterns=integration",
+		"test:integration": "npm run test --workspace=backend -- --testPathPattern=integration",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:install": "playwright install --with-deps chromium",
+		"test:coverage": "npm run test --workspaces -- --coverage",
+		"test:epic": "npm run test:unit && npm run test:integration && npm run test:e2e && npm run docker:validate",
+		"docker:validate": "docker build -t time-manager-backend:test ./backend && docker build -t time-manager-frontend:test ./frontend && echo '✅ Docker builds OK'",
 		"lint": "npm run lint --workspace=frontend"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.50.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.3"
 	},
 	"lint-staged": {
 		"frontend/**/*.{js,jsx}": [
-			"npm run lint --workspace=frontend -- --fix",
-			"npm run test --workspace=frontend -- --run"
+			"npm run lint --workspace=frontend -- --fix"
 		],
-		"backend/**/*.js": [
-			"npm run test --workspace=backend -- --passWithNoTests"
-		]
+		"backend/**/*.js": []
 	}
 }

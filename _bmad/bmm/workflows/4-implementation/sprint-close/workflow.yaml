@@ -1,0 +1,93 @@
+# Sprint Close - Epic Completion Orchestrated Workflow
+name: "sprint-close"
+description: "Workflow orchestré pour clôturer un epic : revue de code, tests exhaustifs, validation Docker, documentation, rétrospective, changelog utilisateur, release et préparation du prochain epic. Supporte deux modes : Interactif (consultation si problème) et YOLO (boucles automatiques)."
+author: "Wendy (Workflow Builder) + Lunos"
+version: "1.0.0"
+
+# Configuration
+config_source: "{project-root}/_bmad/bmm/config.yaml"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+document_output_language: "{config_source}:document_output_language"
+planning_artifacts: "{config_source}:planning_artifacts"
+implementation_artifacts: "{config_source}:implementation_artifacts"
+
+# Workflow location
+installed_path: "{project-root}/_bmad/bmm/workflows/4-implementation/sprint-close"
+standalone: true
+
+# Workflow characteristics
+continuable: true
+produces_document: false
+lifecycle: "create-only"
+
+# Fichier de suivi pour reprise
+status_file: "{implementation_artifacts}/sprint-close-status.yaml"
+
+# Required inputs
+required_inputs:
+  - sprint_status: "{implementation_artifacts}/sprint-status.yaml"
+
+# Input file patterns
+input_file_patterns:
+  stories:
+    description: "Stories de l'epic en cours"
+    pattern: "{implementation_artifacts}/stories/story-{{epic_num}}*.md"
+    load_strategy: "FULL_LOAD"
+  epics:
+    description: "Epic file for context"
+    whole: "{planning_artifacts}/*epic*.md"
+    sharded_index: "{planning_artifacts}/*epic*/index.md"
+    load_strategy: "SELECTIVE_LOAD"
+
+# Mode d'exécution
+# Peut être passé en argument: --mode=yolo ou --mode=interactive (défaut)
+execution_modes:
+  interactive:
+    description: "Consultation si problème, validation retro avec remarques"
+    on_failure: "stop_and_consult"
+  yolo:
+    description: "Tout automatique, boucles jusqu'à succès, retro sans remarques"
+    on_failure: "loop_until_success"
+
+# Sub-workflows invoqués
+sub_workflows:
+  - name: "code-review"
+    path: "{project-root}/_bmad/bmm/workflows/4-implementation/code-review/workflow.yaml"
+    invoked_at: "step-02"
+  - name: "retrospective"
+    path: "{project-root}/_bmad/bmm/workflows/4-implementation/retrospective/workflow.yaml"
+    invoked_at: "step-06"
+
+# Steps (create mode only)
+steps:
+  - id: "step-01-init"
+    file: "{installed_path}/steps-c/step-01-init.md"
+    description: "Initialisation, détection mode, chargement contexte"
+  - id: "step-01b-continue"
+    file: "{installed_path}/steps-c/step-01b-continue.md"
+    description: "Reprise du workflow en cours"
+  - id: "step-02-code-review"
+    file: "{installed_path}/steps-c/step-02-code-review.md"
+    description: "Revue de code de toutes les stories"
+  - id: "step-03-tests"
+    file: "{installed_path}/steps-c/step-03-tests.md"
+    description: "Tests exhaustifs (unit, integration, E2E)"
+  - id: "step-04-docker"
+    file: "{installed_path}/steps-c/step-04-docker.md"
+    description: "Validation builds Docker dev et prod"
+  - id: "step-05-documentation"
+    file: "{installed_path}/steps-c/step-05-documentation.md"
+    description: "Mise à jour de la documentation"
+  - id: "step-06-retrospective"
+    file: "{installed_path}/steps-c/step-06-retrospective.md"
+    description: "Rétrospective de l'epic"
+  - id: "step-07-changelog"
+    file: "{installed_path}/steps-c/step-07-changelog.md"
+    description: "Génération du changelog utilisateur"
+  - id: "step-08-git-ops"
+    file: "{installed_path}/steps-c/step-08-git-ops.md"
+    description: "Push, PR, merge, tag, nouvelle branche"
+  - id: "step-09-report"
+    file: "{installed_path}/steps-c/step-09-report.md"
+    description: "Affichage du rapport final terminal"
