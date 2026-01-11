@@ -295,6 +295,34 @@
       <template-output file="{default_output_file}">latest_tech_information</template-output>
     </check>
 
+    <!-- USER-CENTRIC FEEDBACK SECTION - What can user do after this story? -->
+    <critical>👤 USER FEEDBACK - Describe CONCRETE user value!</critical>
+    <action>For "What User Can Do After This Story" section:</action>
+    <action>- List CONCRETE user actions enabled by this story</action>
+    <action>- Provide step-by-step manual testing instructions</action>
+    <action>- Include prerequisites (auth tokens, test data, roles needed)</action>
+    <action>- If backend-only, indicate "Infrastructure seulement - pas de changement visible pour l'utilisateur"</action>
+    <action>- If frontend, describe the UI interactions available</action>
+    <template-output file="{default_output_file}">user_centric_feedback</template-output>
+
+    <!-- E2E TESTING SECTION - End-to-end test scenarios -->
+    <critical>🧪 E2E TESTING - Provide concrete test scenarios!</critical>
+    <action>For "E2E Testing Notes" section:</action>
+    <action>- Extract E2E scenarios from acceptance criteria</action>
+    <action>- Provide curl commands for backend API testing</action>
+    <action>- For frontend stories, provide Playwright/Cypress-style steps</action>
+    <action>- Link to related frontend/backend stories needed for complete flow testing</action>
+    <template-output file="{default_output_file}">e2e_testing_notes</template-output>
+
+    <!-- FRONTEND/BACKEND BALANCE SECTION - Explicit coverage analysis -->
+    <critical>⚖️ FRONTEND/BACKEND BALANCE - Make coverage explicit!</critical>
+    <action>For "Frontend/Backend Balance" section:</action>
+    <action>- Explicitly state story type: backend-only, frontend-only, or full-stack</action>
+    <action>- If backend-only, reference which future story will add the UI consumer</action>
+    <action>- If frontend-only, reference which backend endpoints are consumed</action>
+    <action>- Flag WARNING if epic has >3:1 backend:frontend story ratio</action>
+    <template-output file="{default_output_file}">frontend_backend_balance</template-output>
+
     <!-- Project context reference -->
     <template-output
       file="{default_output_file}">project_context_reference</template-output>

@@ -12,13 +12,19 @@
 		"test:watch": "vitest"
 	},
 	"dependencies": {
+		"@supabase/supabase-js": "^2.90.1",
+		"@tailwindcss/vite": "^4.1.18",
 		"react": "^19.1.1",
-		"react-dom": "^19.1.1"
+		"react-dom": "^19.1.1",
+		"react-hook-form": "^7.70.0",
+		"react-router-dom": "^7.12.0",
+		"tailwindcss": "^4.1.18"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.36.0",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/react": "^16.3.0",
+		"@testing-library/user-event": "^14.6.1",
 		"@types/react": "^19.1.16",
 		"@types/react-dom": "^19.1.9",
 		"@vitejs/plugin-react": "^5.0.4",
