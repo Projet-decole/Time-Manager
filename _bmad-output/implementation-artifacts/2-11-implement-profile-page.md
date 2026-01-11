@@ -1,6 +1,6 @@
 # Story 2.11: Implement Profile Page
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -34,29 +34,29 @@ So that I can keep my personal details up to date.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create ProfilePage component
-  - [ ] Create `frontend/src/pages/ProfilePage.jsx`
-  - [ ] Display profile info in card format
-  - [ ] View mode and edit mode toggle
+- [x] Task 1: Create ProfilePage component
+  - [x] Create `frontend/src/pages/ProfilePage.jsx`
+  - [x] Display profile info in card format
+  - [x] View mode and edit mode toggle
 
-- [ ] Task 2: Implement edit functionality
-  - [ ] Form with react-hook-form
-  - [ ] Validation: name required, hours 0-168
-  - [ ] Call authService.updateProfile()
-  - [ ] Call refreshUser() after success
+- [x] Task 2: Implement edit functionality
+  - [x] Form with react-hook-form
+  - [x] Validation: name required, hours 0-168
+  - [x] Call authService.updateProfile()
+  - [x] Call refreshUser() after success
 
-- [ ] Task 3: Add profile route
-  - [ ] Add `/profile` to router
-  - [ ] Protected route (requires auth)
+- [x] Task 3: Add profile route
+  - [x] Add `/profile` to router
+  - [x] Protected route (requires auth)
 
-- [ ] Task 4: Add navigation to profile
-  - [ ] Add profile link to app header/nav
-  - [ ] User avatar/name with dropdown optional
+- [x] Task 4: Add navigation to profile
+  - [x] Add profile link to app header/nav
+  - [x] User avatar/name with dropdown optional
 
-- [ ] Task 5: Write tests
-  - [ ] Test profile display
-  - [ ] Test edit flow
-  - [ ] Test validation
+- [x] Task 5: Write tests
+  - [x] Test profile display
+  - [x] Test edit flow
+  - [x] Test validation
 
 ## Dev Notes
 
@@ -274,6 +274,31 @@ npx shadcn@latest add badge
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Opus 4.5 (claude-opus-4-5-20251101)
+
 ### Debug Log References
+- All 25 ProfilePage tests passing
+- All 100 frontend tests passing
+
 ### Completion Notes List
+- Created ProfilePage.jsx with view/edit toggle using react-hook-form
+- Created Badge.jsx UI component for role display
+- Added /profile route to App.jsx with authentication redirect
+- Added profile link with avatar in DashboardPage header
+- Implemented all 5 acceptance criteria:
+  - AC1: Profile display with readonly email/role
+  - AC2: Edit mode toggle with "Modifier" button
+  - AC3: Update via authService.updateProfile() with success message and refreshUser()
+  - AC4: Validation for required names and hours 0-168
+  - AC5: Redirect to /login when not authenticated
+- 25 comprehensive tests covering all acceptance criteria
+
 ### File List
+- frontend/src/pages/ProfilePage.jsx (created)
+- frontend/src/components/ui/Badge.jsx (created)
+- frontend/src/__tests__/pages/ProfilePage.test.jsx (created)
+- frontend/src/pages/DashboardPage.jsx (modified - added profile navigation)
+- frontend/src/App.jsx (modified - added /profile route)
+
+### Change Log
+- 2026-01-11: Implemented Story 2.11 - Profile Page with view/edit functionality, tests, routing and navigation

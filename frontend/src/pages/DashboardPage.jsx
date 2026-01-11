@@ -1,36 +1,30 @@
 // frontend/src/pages/DashboardPage.jsx
 
 import { useAuth } from '../hooks/useAuth';
-import { Button } from '../components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 
 /**
- * Placeholder Dashboard page - will be fully implemented in Epic 6
+ * Dashboard page - placeholder for Epic 6
+ * Navigation is now handled by AppLayout
  */
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout();
-  };
+  const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <Button variant="outline" onClick={handleLogout}>
-              Se deconnecter
-            </Button>
-          </div>
+    <div className="container mx-auto py-8 px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Tableau de bord</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <p className="text-gray-600">
-            Bienvenue, {user?.email || 'utilisateur'} !
+            Bienvenue, {user?.firstName || user?.email || 'utilisateur'} !
           </p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-gray-500">
             Cette page sera implementee dans Epic 6.
           </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
