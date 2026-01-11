@@ -8,7 +8,7 @@ statusFile: '{implementation_artifacts}/sprint-close-status.yaml'
 
 ## STEP GOAL:
 
-Générer et afficher le rapport final du sprint-close, récapitulant toutes les actions menées, le changelog, les issues rencontrées, et les informations importantes.
+Générer et afficher le rapport final du sprint-close, récapitulant toutes les actions menées, le changelog, les issues rencontrées, et les instructions pour finaliser la release.
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
@@ -22,6 +22,7 @@ Générer et afficher le rapport final du sprint-close, récapitulant toutes les
 
 - 🎯 This is the FINAL step - no next step
 - ✅ Display comprehensive report in terminal
+- 📝 CRITICAL: Include copy-paste ready Git commands for pending operations
 - 💾 Mark workflow as completed
 
 ## MANDATORY SEQUENCE
@@ -35,7 +36,7 @@ Read `{statusFile}` and compile all data:
 - Issues log
 - Retrospective
 - Changelog
-- Git ops results
+- Git ops results AND manual_instructions
 
 ### 2. Calculate Summary Statistics
 
@@ -49,6 +50,7 @@ summary:
   tests_passed: true/false
   docker_valid: true/false
   release_complete: true/false
+  git_operations_pending: [list]
 ```
 
 ### 3. Generate Final Report
@@ -105,26 +107,78 @@ Aucune issue rencontrée. 🎊
 {list actions}
 ─────────────────────────────────────────────────────────────────
 
-🔀 RELEASE
+🔀 STATUT RELEASE
 ─────────────────────────────────────────────────────────────────
-• PR: {pr_url or "Non créée"}
-• Tag: {tag or "Non créé"}
-• Nouvelle branche: {new_branch or "Non créée"}
+• Push: {done or pending}
+• PR: {pr_url or "En attente"}
+• Merge: {done or "En attente"}
+• Tag: {tag or "En attente"}
+• Nouvelle branche: {new_branch or "En attente"}
 ─────────────────────────────────────────────────────────────────
-
-{IF manual_steps_required:}
-⚡ ACTIONS MANUELLES REQUISES
-─────────────────────────────────────────────────────────────────
-{list manual steps}
-─────────────────────────────────────────────────────────────────
-
-╔══════════════════════════════════════════════════════════════╗
-║  ✅ Sprint Close complété avec succès !                      ║
-║  Prêt pour Epic {next_epic_number}                           ║
-╚══════════════════════════════════════════════════════════════╝
 ```
 
-### 4. Finalize Status File
+### 4. Display Git Instructions (CRITICAL for release completion)
+
+**IF any git operations are pending:**
+
+```
+🚀 INSTRUCTIONS POUR FINALISER LA RELEASE
+═════════════════════════════════════════════════════════════════
+
+Les agents n'ont pas les permissions pour certaines opérations Git.
+Voici les commandes à exécuter pour finaliser la release :
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ÉTAPE 1: Créer la Pull Request                                  │
+├─────────────────────────────────────────────────────────────────┤
+│ Via GitHub CLI :                                                │
+│                                                                 │
+│ gh pr create --title "Release: Epic {epic_number} - {epic_name}" \
+│   --body "$(cat <<'EOF'                                         │
+│ ## Summary                                                      │
+│ {changelog_content_condensed}                                   │
+│                                                                 │
+│ ## Validation Results                                           │
+│ - Tests: {tests_status}                                         │
+│ - Docker: {docker_status}                                       │
+│ - Code Review: {review_status}                                  │
+│ EOF                                                             │
+│ )" --base main --head {current_branch}                          │
+│                                                                 │
+│ OU via l'interface :                                            │
+│ https://github.com/{owner}/{repo}/compare/main...{branch}       │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ÉTAPE 2: Merger la PR (après review/approbation)                │
+├─────────────────────────────────────────────────────────────────┤
+│ gh pr merge --merge --delete-branch                             │
+│                                                                 │
+│ OU via l'interface GitHub : Merge pull request                  │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ÉTAPE 3: Créer le tag de release                                │
+├─────────────────────────────────────────────────────────────────┤
+│ git checkout main                                               │
+│ git pull origin main                                            │
+│ git tag -a v{epic_number}.0 -m "Release Epic {epic_number}: {epic_name}"
+│ git push origin v{epic_number}.0                                │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ÉTAPE 4: Créer la branche pour le prochain epic                 │
+├─────────────────────────────────────────────────────────────────┤
+│ git checkout main                                               │
+│ git pull origin main                                            │
+│ git checkout -b epic-{next_epic_number}-{next_epic_slug}        │
+│ git push -u origin epic-{next_epic_number}-{next_epic_slug}     │
+└─────────────────────────────────────────────────────────────────┘
+
+═════════════════════════════════════════════════════════════════
+```
+
+### 5. Finalize Status File
 
 Update `{statusFile}`:
 
@@ -137,21 +191,33 @@ current_step: null
 final_summary:
   success: true/false
   issues_count: N
-  manual_actions_required: [list or empty]
+  manual_actions_required:
+    - pr_creation
+    - merge
+    - tag_creation
+    - next_branch_creation
+  git_instructions_provided: true
 ```
 
-### 5. Cleanup (Optional)
-
-IF all operations successful and no manual steps required:
-- Optionally archive status file
-- Sprint-close workflow complete
+### 6. Final Message
 
 Display:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  ✅ Sprint Close complété !                                  ║
+║                                                              ║
+║  Validations terminées. Pour finaliser la release :          ║
+║  → Exécutez les commandes Git ci-dessus                      ║
+║                                                              ║
+║  Prêt pour Epic {next_epic_number} après la release.         ║
+╚══════════════════════════════════════════════════════════════╝
+```
 
 "**🎊 Workflow sprint-close terminé !**
 
 Le rapport ci-dessus résume toutes les actions effectuées.
-Vous êtes prêt à démarrer l'Epic {next_epic_number}.
+Suivez les instructions Git pour compléter la release.
 
 Bonne continuation ! 🚀"
 
@@ -163,12 +229,13 @@ Bonne continuation ! 🚀"
 
 - Complete report generated
 - All sections populated
+- Git instructions clearly provided with copy-paste commands
 - Status file finalized
 - Clear next steps communicated
 
 ### ❌ SYSTEM FAILURE:
 
 - Incomplete report
-- Missing sections
-- Not finalizing status file
-- Leaving user without clear next steps
+- Missing Git instructions when operations are pending
+- Not providing copy-paste ready commands
+- Leaving user without clear path to complete release
