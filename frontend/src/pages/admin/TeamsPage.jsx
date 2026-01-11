@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Alert, AlertDescription } from '../../components/ui/Alert';
 import { Modal } from '../../components/ui/Modal';
 import { useTeams } from '../../hooks/useTeams';
-import { TeamsList, TeamForm, TeamDetailPanel } from '../../components/features/teams';
+import { TeamsList, TeamFormComplete } from '../../components/features/teams';
 
 /**
  * TeamsPage - Main page for team management
@@ -28,24 +28,19 @@ export default function TeamsPage() {
     loading,
     error,
     pagination,
-    createTeam,
-    updateTeam,
     deleteTeam,
     refresh,
     goToPage
   } = useTeams();
 
-  // Modal/Panel states
+  // Modal states
   const [isFormOpen, setFormOpen] = useState(false);
-  const [editingTeam, setEditingTeam] = useState(null);
+  const [managingTeam, setManagingTeam] = useState(null);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState(null);
-  const [isDetailPanelOpen, setDetailPanelOpen] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState(null);
 
   // Action states
   const [isSubmitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
   // Clear success message after delay
@@ -54,49 +49,30 @@ export default function TeamsPage() {
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
-  // ========== CREATE/EDIT HANDLERS ==========
+  // ========== CREATE/MANAGE HANDLERS ==========
 
   const handleOpenCreate = () => {
-    setEditingTeam(null);
-    setFormError(null);
+    setManagingTeam(null);
     setFormOpen(true);
   };
 
-  const handleOpenEdit = (team) => {
-    setEditingTeam(team);
-    setFormError(null);
+  const handleOpenManage = (team) => {
+    setManagingTeam(team);
     setFormOpen(true);
   };
 
   const handleCloseForm = () => {
     setFormOpen(false);
-    setEditingTeam(null);
-    setFormError(null);
+    setManagingTeam(null);
   };
 
-  const handleFormSubmit = async (formData) => {
-    setSubmitting(true);
-    setFormError(null);
-
-    try {
-      if (editingTeam) {
-        await updateTeam(editingTeam.id, formData);
-        showSuccess('Equipe modifiee avec succes');
-      } else {
-        await createTeam(formData);
-        showSuccess('Equipe creee avec succes');
-      }
-      handleCloseForm();
-    } catch (err) {
-      if (err.code === 'DUPLICATE_NAME') {
-        setFormError('Une equipe avec ce nom existe deja');
-      } else {
-        setFormError(err.message || 'Erreur lors de l\'operation');
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const handleFormSave = useCallback(() => {
+    const isUpdate = !!managingTeam;
+    showSuccess(isUpdate ? 'Equipe mise a jour' : 'Equipe creee');
+    setFormOpen(false);
+    setManagingTeam(null);
+    refresh();
+  }, [managingTeam, refresh]);
 
   // ========== DELETE HANDLERS ==========
 
@@ -119,34 +95,19 @@ export default function TeamsPage() {
       await deleteTeam(teamToDelete.id);
       showSuccess('Equipe supprimee avec succes');
       handleCloseDelete();
-
-      // Close detail panel if deleted team was selected
-      if (selectedTeam?.id === teamToDelete.id) {
-        setDetailPanelOpen(false);
-        setSelectedTeam(null);
-      }
-    } catch (err) {
-      setFormError(err.message || 'Erreur lors de la suppression');
+    } catch {
+      // Error handled by hook
     } finally {
       setSubmitting(false);
     }
   };
 
-  // ========== DETAIL PANEL HANDLERS ==========
+  // ========== ROW CLICK HANDLER ==========
 
   const handleRowClick = (team) => {
-    setSelectedTeam(team);
-    setDetailPanelOpen(true);
+    // Open manage form when clicking on a row
+    handleOpenManage(team);
   };
-
-  const handleCloseDetailPanel = () => {
-    setDetailPanelOpen(false);
-    setSelectedTeam(null);
-  };
-
-  const handleTeamUpdated = useCallback(() => {
-    refresh();
-  }, [refresh]);
 
   // ========== PAGINATION HANDLERS ==========
 
@@ -195,7 +156,7 @@ export default function TeamsPage() {
             teams={teams}
             loading={loading}
             onRowClick={handleRowClick}
-            onEdit={handleOpenEdit}
+            onManage={handleOpenManage}
             onDelete={handleOpenDelete}
           />
 
@@ -230,14 +191,12 @@ export default function TeamsPage() {
         </CardContent>
       </Card>
 
-      {/* Create/Edit Team Modal */}
-      <TeamForm
+      {/* Create/Manage Team Modal */}
+      <TeamFormComplete
         isOpen={isFormOpen}
         onClose={handleCloseForm}
-        onSubmit={handleFormSubmit}
-        team={editingTeam}
-        isLoading={isSubmitting}
-        error={formError}
+        onSave={handleFormSave}
+        team={managingTeam}
       />
 
       {/* Delete Confirmation Modal */}
@@ -266,14 +225,6 @@ export default function TeamsPage() {
           </Button>
         </div>
       </Modal>
-
-      {/* Team Detail Panel */}
-      <TeamDetailPanel
-        isOpen={isDetailPanelOpen}
-        onClose={handleCloseDetailPanel}
-        team={selectedTeam}
-        onTeamUpdated={handleTeamUpdated}
-      />
     </div>
   );
 }

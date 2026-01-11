@@ -223,15 +223,18 @@ export const useTeamDetails = (teamId) => {
       if (response.success) {
         // Flatten nested project data: { project: { name, ... } } -> { name, ... }
         // Use project.id as id since unassignProject expects projectId
-        const flattenedProjects = (response.data || []).map(teamProject => ({
-          id: teamProject.project?.id || teamProject.projectId,
-          assignmentId: teamProject.id,
-          name: teamProject.project?.name || '',
-          code: teamProject.project?.code || '',
-          description: teamProject.project?.description || '',
-          status: teamProject.project?.status || '',
-          budgetHours: teamProject.project?.budgetHours || 0
-        }));
+        // Filter out any entries where project data is missing (deleted/archived projects)
+        const flattenedProjects = (response.data || [])
+          .filter(teamProject => teamProject.project != null)
+          .map(teamProject => ({
+            id: teamProject.project.id || teamProject.projectId,
+            assignmentId: teamProject.id,
+            name: teamProject.project.name || 'Projet sans nom',
+            code: teamProject.project.code || '',
+            description: teamProject.project.description || '',
+            status: teamProject.project.status || '',
+            budgetHours: teamProject.project.budgetHours || 0
+          }));
         setProjects(flattenedProjects);
       } else {
         setProjectsError('Erreur lors du chargement des projets');

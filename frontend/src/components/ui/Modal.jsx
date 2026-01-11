@@ -5,8 +5,14 @@ import { useEffect, useRef } from 'react';
 /**
  * Modal component with backdrop and animation
  * Story 2.14: Manager User Management
+ *
+ * @param {boolean} isOpen - Whether modal is visible
+ * @param {Function} onClose - Close handler
+ * @param {string} title - Modal title
+ * @param {string} [size='md'] - Modal size: 'sm', 'md', 'lg', 'xl'
+ * @param {ReactNode} children - Modal content
  */
-export function Modal({ isOpen, onClose, title, children }) {
+export function Modal({ isOpen, onClose, title, size = 'md', children }) {
   const modalRef = useRef(null);
 
   // Handle escape key press
@@ -53,7 +59,12 @@ export function Modal({ isOpen, onClose, title, children }) {
       {/* Modal content */}
       <div
         ref={modalRef}
-        className="relative z-10 w-full max-w-md mx-4 bg-white rounded-lg shadow-xl"
+        className={`relative z-10 w-full mx-4 bg-white rounded-lg shadow-xl ${
+          size === 'sm' ? 'max-w-sm' :
+          size === 'lg' ? 'max-w-2xl' :
+          size === 'xl' ? 'max-w-4xl' :
+          'max-w-md'
+        }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

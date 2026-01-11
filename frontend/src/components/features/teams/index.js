@@ -3,6 +3,7 @@
 
 export { TeamsList } from './TeamsList';
 export { TeamForm } from './TeamForm';
+export { TeamFormComplete } from './TeamFormComplete';
 export { TeamDetailPanel } from './TeamDetailPanel';
 export { MemberSelector } from './MemberSelector';
 export { ProjectSelector } from './ProjectSelector';
