@@ -14,9 +14,13 @@ jest.mock('../../utils/supabase', () => ({
   supabaseAdmin: {
     auth: {
       admin: {
-        signOut: jest.fn()
+        signOut: jest.fn(),
+        createUser: jest.fn(),
+        generateLink: jest.fn(),
+        deleteUser: jest.fn()
       }
-    }
+    },
+    from: jest.fn()
   },
   validateEnvVars: jest.fn()
 }));
@@ -967,6 +971,582 @@ describe('Users Routes', () => {
 
         // Should still return 200, just ignore invalid filter
         expect(response.status).toBe(200);
+      });
+    });
+  });
+
+  // ============================================================
+  // Story 2.14: Manager User Management Tests
+  // ============================================================
+
+  describe('POST /api/v1/users (Manager Create User)', () => {
+    const mockManagerProfile = {
+      id: '550e8400-e29b-41d4-a716-446655440001',
+      email: 'manager@example.com',
+      first_name: 'Manager',
+      last_name: 'User',
+      role: 'manager',
+      weekly_hours_target: 40,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+
+    const mockEmployeeProfile = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      email: 'employee@example.com',
+      first_name: 'Employee',
+      last_name: 'User',
+      role: 'employee',
+      weekly_hours_target: 35,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+
+    const setupManagerAuth = () => {
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockManagerProfile.id, email: mockManagerProfile.email } },
+        error: null
+      });
+
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockManagerProfile,
+              error: null
+            })
+          })
+        })
+      });
+    };
+
+    const setupEmployeeAuth = () => {
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockEmployeeProfile.id, email: mockEmployeeProfile.email } },
+        error: null
+      });
+
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockEmployeeProfile,
+              error: null
+            })
+          })
+        })
+      });
+    };
+
+    describe('AC#1: Manager can create new user', () => {
+      it('should return 201 with created user data for manager (AC#1, AC#2)', async () => {
+        setupManagerAuth();
+
+        const newUserId = '550e8400-e29b-41d4-a716-446655440099';
+        const { supabaseAdmin } = require('../../utils/supabase');
+
+        supabaseAdmin.auth.admin.createUser = jest.fn().mockResolvedValue({
+          data: { user: { id: newUserId, email: 'newuser@example.com' } },
+          error: null
+        });
+
+        supabaseAdmin.auth.admin.generateLink = jest.fn().mockResolvedValue({
+          data: { properties: { action_link: 'https://example.com/reset' } },
+          error: null
+        });
+
+        supabaseAdmin.from = jest.fn().mockReturnValue({
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({
+                data: {
+                  id: newUserId,
+                  email: 'newuser@example.com',
+                  first_name: 'Jean',
+                  last_name: 'Dupont',
+                  role: 'employee',
+                  weekly_hours_target: 40
+                },
+                error: null
+              })
+            })
+          })
+        });
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            email: 'newuser@example.com',
+            firstName: 'Jean',
+            lastName: 'Dupont',
+            role: 'employee',
+            weeklyHoursTarget: 40
+          });
+
+        expect(response.status).toBe(201);
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('id', newUserId);
+        expect(response.body.data).toHaveProperty('email', 'newuser@example.com');
+        expect(response.body.data).toHaveProperty('firstName', 'Jean');
+        expect(response.body.data).toHaveProperty('lastName', 'Dupont');
+        expect(response.body.data).toHaveProperty('role', 'employee');
+        expect(response.body.data).toHaveProperty('weeklyHoursTarget', 40);
+      });
+
+      it('should use default values for role and weeklyHoursTarget', async () => {
+        setupManagerAuth();
+
+        const newUserId = '550e8400-e29b-41d4-a716-446655440099';
+        const { supabaseAdmin } = require('../../utils/supabase');
+
+        supabaseAdmin.auth.admin.createUser = jest.fn().mockResolvedValue({
+          data: { user: { id: newUserId, email: 'newuser@example.com' } },
+          error: null
+        });
+
+        supabaseAdmin.auth.admin.generateLink = jest.fn().mockResolvedValue({
+          data: { properties: { action_link: 'https://example.com/reset' } },
+          error: null
+        });
+
+        supabaseAdmin.from = jest.fn().mockReturnValue({
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({
+                data: {
+                  id: newUserId,
+                  email: 'newuser@example.com',
+                  first_name: 'Jean',
+                  last_name: 'Dupont',
+                  role: 'employee',
+                  weekly_hours_target: 35
+                },
+                error: null
+              })
+            })
+          })
+        });
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            email: 'newuser@example.com',
+            firstName: 'Jean',
+            lastName: 'Dupont'
+          });
+
+        expect(response.status).toBe(201);
+        expect(response.body.data).toHaveProperty('role', 'employee');
+        expect(response.body.data).toHaveProperty('weeklyHoursTarget', 35);
+      });
+    });
+
+    describe('AC#6: Validation errors', () => {
+      it('should return 400 when email is missing', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            firstName: 'Jean',
+            lastName: 'Dupont'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 400 when firstName is missing', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            email: 'newuser@example.com',
+            lastName: 'Dupont'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 400 when lastName is missing', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            email: 'newuser@example.com',
+            firstName: 'Jean'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 400 when email is invalid format', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            email: 'not-an-email',
+            firstName: 'Jean',
+            lastName: 'Dupont'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 400 when role is invalid', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            email: 'newuser@example.com',
+            firstName: 'Jean',
+            lastName: 'Dupont',
+            role: 'admin'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 400 when weeklyHoursTarget > 168', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            email: 'newuser@example.com',
+            firstName: 'Jean',
+            lastName: 'Dupont',
+            weeklyHoursTarget: 200
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 400 when weeklyHoursTarget < 0', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            email: 'newuser@example.com',
+            firstName: 'Jean',
+            lastName: 'Dupont',
+            weeklyHoursTarget: -5
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 409 when email already exists', async () => {
+        setupManagerAuth();
+
+        const { supabaseAdmin } = require('../../utils/supabase');
+
+        supabaseAdmin.auth.admin.createUser = jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'User already registered' }
+        });
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer manager-token')
+          .send({
+            email: 'existing@example.com',
+            firstName: 'Jean',
+            lastName: 'Dupont'
+          });
+
+        expect(response.status).toBe(409);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'EMAIL_EXISTS');
+      });
+    });
+
+    describe('Authorization', () => {
+      it('should return 403 Forbidden for employee', async () => {
+        setupEmployeeAuth();
+
+        const response = await request(app)
+          .post('/api/v1/users')
+          .set('Authorization', 'Bearer employee-token')
+          .send({
+            email: 'newuser@example.com',
+            firstName: 'Jean',
+            lastName: 'Dupont'
+          });
+
+        expect(response.status).toBe(403);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'FORBIDDEN');
+      });
+
+      it('should return 401 Unauthorized without auth header', async () => {
+        const response = await request(app)
+          .post('/api/v1/users')
+          .send({
+            email: 'newuser@example.com',
+            firstName: 'Jean',
+            lastName: 'Dupont'
+          });
+
+        expect(response.status).toBe(401);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
+      });
+    });
+  });
+
+  describe('PATCH /api/v1/users/:id (Manager Update User)', () => {
+    const mockManagerProfile = {
+      id: '550e8400-e29b-41d4-a716-446655440001',
+      email: 'manager@example.com',
+      first_name: 'Manager',
+      last_name: 'User',
+      role: 'manager',
+      weekly_hours_target: 40,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+
+    const mockEmployeeProfile = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      email: 'employee@example.com',
+      first_name: 'Employee',
+      last_name: 'User',
+      role: 'employee',
+      weekly_hours_target: 35,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z'
+    };
+
+    const targetUserId = '550e8400-e29b-41d4-a716-446655440099';
+
+    const setupManagerAuth = () => {
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockManagerProfile.id, email: mockManagerProfile.email } },
+        error: null
+      });
+
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockManagerProfile,
+              error: null
+            })
+          })
+        })
+      });
+    };
+
+    const setupEmployeeAuth = () => {
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockEmployeeProfile.id, email: mockEmployeeProfile.email } },
+        error: null
+      });
+
+      supabase.from.mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: mockEmployeeProfile,
+              error: null
+            })
+          })
+        })
+      });
+    };
+
+    describe('AC#3: Manager can edit user weeklyHoursTarget', () => {
+      it('should return 200 with updated user data for manager', async () => {
+        setupManagerAuth();
+
+        const { supabaseAdmin } = require('../../utils/supabase');
+
+        supabaseAdmin.from = jest.fn().mockReturnValue({
+          update: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: {
+                    id: targetUserId,
+                    email: 'target@example.com',
+                    first_name: 'Target',
+                    last_name: 'User',
+                    role: 'employee',
+                    weekly_hours_target: 40
+                  },
+                  error: null
+                })
+              })
+            })
+          })
+        });
+
+        const response = await request(app)
+          .patch(`/api/v1/users/${targetUserId}`)
+          .set('Authorization', 'Bearer manager-token')
+          .send({ weeklyHoursTarget: 40 });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('weeklyHoursTarget', 40);
+      });
+
+      it('should allow updating firstName and lastName', async () => {
+        setupManagerAuth();
+
+        const { supabaseAdmin } = require('../../utils/supabase');
+
+        supabaseAdmin.from = jest.fn().mockReturnValue({
+          update: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: {
+                    id: targetUserId,
+                    email: 'target@example.com',
+                    first_name: 'NewFirst',
+                    last_name: 'NewLast',
+                    role: 'employee',
+                    weekly_hours_target: 35
+                  },
+                  error: null
+                })
+              })
+            })
+          })
+        });
+
+        const response = await request(app)
+          .patch(`/api/v1/users/${targetUserId}`)
+          .set('Authorization', 'Bearer manager-token')
+          .send({ firstName: 'NewFirst', lastName: 'NewLast' });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('firstName', 'NewFirst');
+        expect(response.body.data).toHaveProperty('lastName', 'NewLast');
+      });
+    });
+
+    describe('Validation', () => {
+      it('should return 400 when weeklyHoursTarget > 168', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .patch(`/api/v1/users/${targetUserId}`)
+          .set('Authorization', 'Bearer manager-token')
+          .send({ weeklyHoursTarget: 200 });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 400 when weeklyHoursTarget < 0', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .patch(`/api/v1/users/${targetUserId}`)
+          .set('Authorization', 'Bearer manager-token')
+          .send({ weeklyHoursTarget: -5 });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 400 when no data to update', async () => {
+        setupManagerAuth();
+
+        const response = await request(app)
+          .patch(`/api/v1/users/${targetUserId}`)
+          .set('Authorization', 'Bearer manager-token')
+          .send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+      });
+
+      it('should return 404 when user not found', async () => {
+        setupManagerAuth();
+
+        const { supabaseAdmin } = require('../../utils/supabase');
+
+        supabaseAdmin.from = jest.fn().mockReturnValue({
+          update: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: null,
+                  error: { code: 'PGRST116', message: 'No rows found' }
+                })
+              })
+            })
+          })
+        });
+
+        const response = await request(app)
+          .patch(`/api/v1/users/${targetUserId}`)
+          .set('Authorization', 'Bearer manager-token')
+          .send({ weeklyHoursTarget: 40 });
+
+        expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'NOT_FOUND');
+      });
+    });
+
+    describe('Authorization', () => {
+      it('should return 403 Forbidden for employee', async () => {
+        setupEmployeeAuth();
+
+        const response = await request(app)
+          .patch(`/api/v1/users/${targetUserId}`)
+          .set('Authorization', 'Bearer employee-token')
+          .send({ weeklyHoursTarget: 40 });
+
+        expect(response.status).toBe(403);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'FORBIDDEN');
+      });
+
+      it('should return 401 Unauthorized without auth header', async () => {
+        const response = await request(app)
+          .patch(`/api/v1/users/${targetUserId}`)
+          .send({ weeklyHoursTarget: 40 });
+
+        expect(response.status).toBe(401);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toHaveProperty('code', 'UNAUTHORIZED');
       });
     });
   });

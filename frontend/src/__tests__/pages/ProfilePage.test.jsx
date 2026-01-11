@@ -352,9 +352,11 @@ describe('ProfilePage', () => {
       });
     });
 
+    // Story 2.14: weeklyHoursTarget is readonly for employees, only managers can edit
+    // So we use mockManagerUser for these validation tests
     it('shows error when weekly hours exceed 168', async () => {
       const user = userEvent.setup();
-      renderProfilePage();
+      renderProfilePage(mockManagerUser);
 
       await waitFor(() => {
         expect(screen.getByText('Mon Profil')).toBeInTheDocument();
@@ -372,9 +374,10 @@ describe('ProfilePage', () => {
       });
     });
 
+    // Story 2.14: weeklyHoursTarget is readonly for employees, only managers can edit
     it('shows error when weekly hours are negative', async () => {
       const user = userEvent.setup();
-      renderProfilePage();
+      renderProfilePage(mockManagerUser);
 
       await waitFor(() => {
         expect(screen.getByText('Mon Profil')).toBeInTheDocument();
@@ -390,6 +393,19 @@ describe('ProfilePage', () => {
       await waitFor(() => {
         expect(screen.getByText(/minimum 0 heures/i)).toBeInTheDocument();
       });
+    });
+
+    // Story 2.14: Employee cannot modify weekly hours target
+    it('disables weekly hours target for employees', async () => {
+      renderProfilePage(mockUser); // mockUser is an employee
+
+      await waitFor(() => {
+        expect(screen.getByText('Mon Profil')).toBeInTheDocument();
+      });
+
+      const hoursInput = screen.getByLabelText(/heures cibles/i);
+      expect(hoursInput).toBeDisabled();
+      expect(screen.getByText(/definies par votre manager/i)).toBeInTheDocument();
     });
   });
 

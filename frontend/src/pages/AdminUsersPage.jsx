@@ -1,11 +1,14 @@
 // frontend/src/pages/AdminUsersPage.jsx
+// Story 2.14: Manager User Management
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../components/ui/Table';
 import { Select, SelectOption } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
+import { Alert, AlertDescription } from '../components/ui/Alert';
 import { usersService } from '../services/usersService';
+import { UserFormModal } from '../components/users/UserFormModal';
 
 /**
  * Format role for display with French labels
@@ -39,6 +42,7 @@ function RoleBadge({ role }) {
 /**
  * Admin Users page - displays user list with filtering and pagination
  * Requires manager role (protected by RoleProtectedRoute)
+ * Story 2.14: Manager User Management - Create and Edit users
  */
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -51,6 +55,13 @@ export default function AdminUsersPage() {
     totalPages: 0
   });
   const [roleFilter, setRoleFilter] = useState('all');
+
+  // Story 2.14: Modal state for create/edit
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [modalError, setModalError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const fetchUsers = useCallback(async (page = 1, role = roleFilter) => {
     setIsLoading(true);
@@ -99,27 +110,97 @@ export default function AdminUsersPage() {
     }
   };
 
+  // Story 2.14: Handle opening create modal
+  const handleOpenCreateModal = () => {
+    setEditingUser(null);
+    setModalError(null);
+    setIsModalOpen(true);
+  };
+
+  // Story 2.14: Handle opening edit modal
+  const handleOpenEditModal = (user) => {
+    setEditingUser(user);
+    setModalError(null);
+    setIsModalOpen(true);
+  };
+
+  // Story 2.14: Handle closing modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingUser(null);
+    setModalError(null);
+  };
+
+  // Story 2.14: Handle form submission (create or update)
+  const handleFormSubmit = async (formData) => {
+    setIsSubmitting(true);
+    setModalError(null);
+
+    try {
+      if (editingUser) {
+        // Update existing user
+        await usersService.update(editingUser.id, formData);
+        setSuccessMessage('Utilisateur modifie avec succes');
+      } else {
+        // Create new user
+        await usersService.create(formData);
+        setSuccessMessage('Utilisateur cree avec succes');
+      }
+
+      handleCloseModal();
+      // Refresh the user list
+      fetchUsers(pagination.page, roleFilter);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      // Handle specific error codes
+      if (err.code === 'EMAIL_EXISTS') {
+        setModalError('Un utilisateur avec cet email existe deja');
+      } else if (err.code === 'NOT_FOUND') {
+        setModalError('Utilisateur non trouve');
+      } else {
+        setModalError(err.message || 'Erreur lors de l\'operation');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const showPagination = pagination.totalPages > 1;
 
   return (
     <div className="container mx-auto py-8 px-4">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <CardTitle>Gestion des utilisateurs</CardTitle>
-            <div className="w-48">
-              <Select
-                value={roleFilter}
-                onValueChange={handleRoleFilterChange}
-              >
-                <SelectOption value="all">Tous les roles</SelectOption>
-                <SelectOption value="employee">Employe</SelectOption>
-                <SelectOption value="manager">Manager</SelectOption>
-              </Select>
+            <div className="flex items-center gap-4">
+              <div className="w-48">
+                <Select
+                  value={roleFilter}
+                  onValueChange={handleRoleFilterChange}
+                >
+                  <SelectOption value="all">Tous les roles</SelectOption>
+                  <SelectOption value="employee">Employe</SelectOption>
+                  <SelectOption value="manager">Manager</SelectOption>
+                </Select>
+              </div>
+              {/* Story 2.14: Create User button */}
+              <Button onClick={handleOpenCreateModal}>
+                Nouvel utilisateur
+              </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
+          {/* Story 2.14: Success message */}
+          {successMessage && (
+            <Alert variant="success" className="mb-4">
+              <AlertDescription>{successMessage}</AlertDescription>
+            </Alert>
+          )}
+
           {error && (
             <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
               {error}
@@ -139,6 +220,7 @@ export default function AdminUsersPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Heures/sem</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -151,6 +233,16 @@ export default function AdminUsersPage() {
                       <RoleBadge role={user.role} />
                     </TableCell>
                     <TableCell>{user.weeklyHoursTarget}h</TableCell>
+                    <TableCell>
+                      {/* Story 2.14: Edit button */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenEditModal(user)}
+                      >
+                        Modifier
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -186,6 +278,16 @@ export default function AdminUsersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Story 2.14: Create/Edit User Modal */}
+      <UserFormModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleFormSubmit}
+        user={editingUser}
+        isLoading={isSubmitting}
+        error={modalError}
+      />
     </div>
   );
 }
