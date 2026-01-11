@@ -1,6 +1,6 @@
 # Story 2.13: Implement Admin Users Page (Manager Only)
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -28,28 +28,28 @@ So that I can view my team members and their information.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create AdminUsersPage
-  - [ ] Create `frontend/src/pages/AdminUsersPage.jsx`
-  - [ ] Fetch users from API with pagination
-  - [ ] Display in table format
+- [x] Task 1: Create AdminUsersPage
+  - [x] Create `frontend/src/pages/AdminUsersPage.jsx`
+  - [x] Fetch users from API with pagination
+  - [x] Display in table format
 
-- [ ] Task 2: Add role filter
-  - [ ] Dropdown to filter by role
-  - [ ] Update API call with filter
+- [x] Task 2: Add role filter
+  - [x] Dropdown to filter by role
+  - [x] Update API call with filter
 
-- [ ] Task 3: Implement pagination
-  - [ ] Previous/Next buttons
-  - [ ] Page info display
-  - [ ] Handle page changes
+- [x] Task 3: Implement pagination
+  - [x] Previous/Next buttons
+  - [x] Page info display
+  - [x] Handle page changes
 
-- [ ] Task 4: Add usersService
-  - [ ] Create `frontend/src/services/usersService.js`
-  - [ ] getAllUsers(page, limit, role) method
+- [x] Task 4: Add usersService
+  - [x] Create `frontend/src/services/usersService.js`
+  - [x] getAllUsers(page, limit, role) method
 
-- [ ] Task 5: Write tests
-  - [ ] Test table renders
-  - [ ] Test pagination
-  - [ ] Test filtering
+- [x] Task 5: Write tests
+  - [x] Test table renders
+  - [x] Test pagination
+  - [x] Test filtering
 
 ## Dev Notes
 
@@ -74,27 +74,13 @@ export const usersService = {
 
 ```jsx
 // frontend/src/pages/AdminUsersPage.jsx
-import { useState, useEffect } from 'react';
+// Note: Uses custom UI components (not shadcn) - see components/ui/
+import { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../components/ui/Table';
+import { Select, SelectOption } from '../components/ui/Select';
+import { Button } from '../components/ui/Button';
 import { usersService } from '../services/usersService';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Users, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -245,11 +231,11 @@ frontend/src/
     └── AdminUsersPage.test.jsx
 ```
 
-### Additional shadcn Components
+### Custom UI Components Created
 
-```bash
-npx shadcn@latest add table select
-```
+Custom Table and Select components were created instead of shadcn:
+- `components/ui/Table.jsx` - Table, TableHeader, TableBody, TableHead, TableRow, TableCell
+- `components/ui/Select.jsx` - Native select styled to match design system
 
 ## What User Can Do After This Story
 
@@ -328,6 +314,47 @@ Apres cette story, l'utilisateur dispose de:
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Opus 4.5
+
 ### Debug Log References
+N/A
+
 ### Completion Notes List
+- Created custom Table and Select UI components (project doesn't use shadcn)
+- AdminUsersPage uses usersService.getAll() for API calls
+- RoleBadge inline component for role display with color coding
+- Pagination only shown when totalPages > 1
+- Role filter resets to page 1 when changed
+- 18 tests covering all acceptance criteria
+- Total frontend tests: 141 passing
+
 ### File List
+- frontend/src/services/usersService.js (created)
+- frontend/src/components/ui/Table.jsx (created)
+- frontend/src/components/ui/Select.jsx (created)
+- frontend/src/pages/AdminUsersPage.jsx (updated from placeholder)
+- frontend/src/__tests__/services/usersService.test.js (created)
+- frontend/src/__tests__/pages/AdminUsersPage.test.jsx (created)
+
+## Senior Developer Review (AI)
+
+**Reviewer:** Amelia (Dev Agent) | **Date:** 2026-01-11 | **Outcome:** APPROVED
+
+### Issues Found & Fixed
+
+| Severity | Issue | Resolution |
+|----------|-------|------------|
+| MEDIUM | Stale closure dans useEffect (roleFilter) | Fixed: useEffect uses fetchUsers() with eslint-disable comment |
+| MEDIUM | Pas de test pour l'etat d'erreur | Fixed: Added 2 tests for API error handling |
+| MEDIUM | Dev Notes obsoletes (shadcn imports) | Fixed: Updated to reflect custom components |
+
+### Verification Summary
+
+- All 4 Acceptance Criteria: IMPLEMENTED
+- All 5 Tasks: COMPLETED
+- Tests: 143 passing (20 for AdminUsersPage)
+- Route protection: Verified (RoleProtectedRoute with manager role)
+
+### Change Log
+
+- 2026-01-11: Code review completed, 3 MEDIUM issues fixed, status → done
