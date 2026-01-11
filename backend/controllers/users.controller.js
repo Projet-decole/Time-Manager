@@ -53,4 +53,38 @@ const getAll = async (req, res) => {
   return paginatedResponse(res, result.data, result.pagination);
 };
 
-module.exports = { getMe, updateMe, getAll };
+/**
+ * Create a new user (manager only)
+ * Story 2.14: Manager User Management
+ * @route POST /api/v1/users
+ * @param {Request} req - Express request with validatedBody { email, firstName, lastName, role?, weeklyHoursTarget? }
+ * @param {Response} res - Express response
+ */
+const create = async (req, res) => {
+  const userData = req.validatedBody;
+
+  const createdUser = await usersService.createUser(userData);
+
+  return res.status(201).json({
+    success: true,
+    data: createdUser
+  });
+};
+
+/**
+ * Update a user (manager only)
+ * Story 2.14: Manager User Management
+ * @route PATCH /api/v1/users/:id
+ * @param {Request} req - Express request with params.id and validatedBody { firstName?, lastName?, weeklyHoursTarget? }
+ * @param {Response} res - Express response
+ */
+const update = async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.validatedBody;
+
+  const updatedUser = await usersService.updateUser(id, updateData);
+
+  return successResponse(res, updatedUser);
+};
+
+module.exports = { getMe, updateMe, getAll, create, update };

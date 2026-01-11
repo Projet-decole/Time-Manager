@@ -70,7 +70,7 @@ development_status:
     2-12-implement-protected-routes-and-navigation: done
     2-13-implement-admin-users-page: done
     # Full-stack story (new)
-    2-14-implement-manager-user-management: ready-for-dev
+    2-14-implement-manager-user-management: done
     epic-2-retrospective: optional
 
     # Epic 3: Admin Data Management (8 stories)

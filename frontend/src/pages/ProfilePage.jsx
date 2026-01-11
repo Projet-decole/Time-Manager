@@ -14,6 +14,7 @@ import { Badge } from '../components/ui/Badge';
 /**
  * Profile page for viewing and editing user profile information
  * Authentication is handled by ProtectedRoute at layout level
+ * Story 2.14: Employees cannot modify weeklyHoursTarget (readonly field)
  */
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -149,12 +150,14 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Story 2.14: weeklyHoursTarget - readonly for employees, editable only by managers */}
             <div className="space-y-2">
               <Label htmlFor="weeklyHoursTarget">Heures cibles par semaine</Label>
               <Input
                 id="weeklyHoursTarget"
                 type="number"
-                disabled={!isEditing}
+                disabled={!isEditing || user?.role === 'employee'}
+                className={user?.role === 'employee' ? 'bg-gray-50' : ''}
                 error={!!errors.weeklyHoursTarget}
                 {...register('weeklyHoursTarget', {
                   valueAsNumber: true,
@@ -162,6 +165,11 @@ export default function ProfilePage() {
                   max: { value: 168, message: 'Maximum 168 heures (24h x 7j)' }
                 })}
               />
+              {user?.role === 'employee' && (
+                <p className="text-xs text-gray-500">
+                  Les heures cibles sont definies par votre manager
+                </p>
+              )}
               {errors.weeklyHoursTarget && <p className="text-sm text-red-500">{errors.weeklyHoursTarget.message}</p>}
             </div>
 

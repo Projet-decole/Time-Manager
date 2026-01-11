@@ -3,7 +3,7 @@
 const express = require('express');
 const usersController = require('../controllers/users.controller');
 const asyncHandler = require('../utils/asyncHandler');
-const { updateProfileSchema, validate } = require('../validators/users.validator');
+const { updateProfileSchema, createUserSchema, updateUserSchema, validate } = require('../validators/users.validator');
 const { authenticate } = require('../middleware/auth.middleware');
 const { rbac } = require('../middleware/rbac.middleware');
 
@@ -32,5 +32,23 @@ router.get('/me', authenticate, asyncHandler(usersController.getMe));
  * @access  Private (requires authentication)
  */
 router.patch('/me', authenticate, validate(updateProfileSchema), asyncHandler(usersController.updateMe));
+
+/**
+ * @route   POST /api/v1/users
+ * @desc    Create a new user (manager only)
+ * @access  Private (requires authentication + manager role)
+ * @body    { email, firstName, lastName, role?, weeklyHoursTarget? }
+ * Story 2.14: Manager User Management
+ */
+router.post('/', authenticate, rbac('manager'), validate(createUserSchema), asyncHandler(usersController.create));
+
+/**
+ * @route   PATCH /api/v1/users/:id
+ * @desc    Update a user (manager only)
+ * @access  Private (requires authentication + manager role)
+ * @body    { firstName?, lastName?, weeklyHoursTarget? }
+ * Story 2.14: Manager User Management
+ */
+router.patch('/:id', authenticate, rbac('manager'), validate(updateUserSchema), asyncHandler(usersController.update));
 
 module.exports = router;
