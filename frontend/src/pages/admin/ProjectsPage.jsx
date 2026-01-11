@@ -270,9 +270,11 @@ export default function ProjectsPage() {
       if (response.success) {
         setSelectedProject(response.data);
         setSelectedProjectTeams(response.data.teams || []);
+      } else {
+        setError('Erreur lors du chargement des details du projet');
       }
     } catch (err) {
-      console.error('Erreur lors du chargement des details:', err);
+      setError(err.message || 'Erreur lors du chargement des details');
     } finally {
       setIsDetailLoading(false);
     }

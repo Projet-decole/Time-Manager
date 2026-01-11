@@ -154,10 +154,10 @@ export default function CategoriesPage() {
         await activateCategory(category.id);
         showSuccess('Categorie activee avec succes');
       }
-    } catch (err) {
+    } catch {
       setSuccessMessage(null);
-      // Show error in an alert or toast
-      console.error('Action failed:', err);
+      // Display error to user via page-level error state
+      // Note: The useCategories hook already shows errors in the error state
     }
   };
 

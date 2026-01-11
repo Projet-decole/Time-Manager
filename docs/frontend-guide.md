@@ -17,7 +17,11 @@ frontend/src/
 │   ├── DashboardPage.jsx      # Tableau de bord (placeholder)
 │   ├── ProfilePage.jsx        # Profil utilisateur
 │   ├── AdminUsersPage.jsx     # Gestion utilisateurs (manager)
-│   └── AccessDeniedPage.jsx   # Acces refuse
+│   ├── AccessDeniedPage.jsx   # Acces refuse
+│   └── admin/                 # Pages admin (Epic 3)
+│       ├── TeamsPage.jsx      # Gestion equipes
+│       ├── ProjectsPage.jsx   # Gestion projets
+│       └── CategoriesPage.jsx # Gestion categories
 │
 ├── components/
 │   ├── ui/                    # Composants UI reutilisables
@@ -37,18 +41,42 @@ frontend/src/
 │   │   ├── ProtectedRoute.jsx# Route protegee par auth
 │   │   └── RoleProtectedRoute.jsx # Route protegee par role
 │   │
-│   └── users/                 # Composants metier
-│       └── UserFormModal.jsx # Modal creation/edition user
+│   ├── users/                 # Composants metier
+│   │   └── UserFormModal.jsx # Modal creation/edition user
+│   │
+│   └── features/              # Composants metier (Epic 3)
+│       ├── teams/             # Composants equipes
+│       │   ├── TeamsList.jsx
+│       │   ├── TeamForm.jsx
+│       │   ├── TeamDetailPanel.jsx
+│       │   ├── MemberSelector.jsx
+│       │   └── ProjectSelector.jsx
+│       ├── projects/          # Composants projets
+│       │   ├── ProjectsList.jsx
+│       │   ├── ProjectForm.jsx
+│       │   ├── ProjectDetailPanel.jsx
+│       │   └── BudgetProgress.jsx
+│       └── categories/        # Composants categories
+│           ├── CategoriesList.jsx
+│           ├── CategoryForm.jsx
+│           ├── ColorPicker.jsx
+│           └── ColorChip.jsx
 │
 ├── contexts/
 │   └── AuthContext.jsx        # Context d'authentification
 │
 ├── hooks/
-│   └── useAuth.js             # Hook pour acceder au AuthContext
+│   ├── useAuth.js             # Hook pour acceder au AuthContext
+│   ├── useTeams.js            # Hook gestion equipes (Epic 3)
+│   ├── useProjects.js         # Hook gestion projets (Epic 3)
+│   └── useCategories.js       # Hook gestion categories (Epic 3)
 │
 ├── services/
 │   ├── authService.js         # Operations d'authentification
-│   └── usersService.js        # Operations sur les utilisateurs
+│   ├── usersService.js        # Operations sur les utilisateurs
+│   ├── teamsService.js        # Operations sur les equipes (Epic 3)
+│   ├── projectsService.js     # Operations sur les projets (Epic 3)
+│   └── categoriesService.js   # Operations sur les categories (Epic 3)
 │
 └── lib/
     ├── api.js                 # Client API fetch
