@@ -31,14 +31,14 @@ function truncateText(text, maxLength = 50) {
  * @param {Array} props.teams - Array of team objects
  * @param {boolean} [props.loading=false] - Loading state
  * @param {Function} props.onRowClick - Callback when clicking on a row
- * @param {Function} props.onEdit - Callback when clicking edit button
+ * @param {Function} props.onManage - Callback when clicking manage button
  * @param {Function} props.onDelete - Callback when clicking delete button
  */
 export function TeamsList({
   teams = [],
   loading = false,
   onRowClick,
-  onEdit,
+  onManage,
   onDelete
 }) {
   if (loading) {
@@ -73,6 +73,7 @@ export function TeamsList({
           <TableHead>Nom</TableHead>
           <TableHead>Description</TableHead>
           <TableHead className="text-center">Membres</TableHead>
+          <TableHead className="text-center">Projets</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -88,8 +89,13 @@ export function TeamsList({
               {truncateText(team.description)}
             </TableCell>
             <TableCell className="text-center">
-              <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">
+              <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
                 {team.memberCount ?? 0}
+              </span>
+            </TableCell>
+            <TableCell className="text-center">
+              <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                {team.projectCount ?? 0}
               </span>
             </TableCell>
             <TableCell className="text-right">
@@ -99,10 +105,10 @@ export function TeamsList({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEdit?.(team);
+                    onManage?.(team);
                   }}
                 >
-                  Modifier
+                  Gerer
                 </Button>
                 <Button
                   variant="destructive"
