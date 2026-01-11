@@ -1388,6 +1388,119 @@ describe('Teams Service', () => {
     });
   });
 
+  describe('AC5: Multiple Team Membership (FR43)', () => {
+    it('should allow user to belong to multiple teams simultaneously', async () => {
+      const teamAId = '550e8400-e29b-41d4-a716-446655440010';
+      const teamBId = '550e8400-e29b-41d4-a716-446655440011';
+      const userId = '550e8400-e29b-41d4-a716-446655440001';
+
+      // Setup: Both teams and user exist, user can be added to both
+      let callCount = 0;
+      supabase.from.mockImplementation(() => {
+        callCount++;
+        // Team A exists
+        if (callCount === 1) {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: { id: teamAId },
+                  error: null
+                })
+              })
+            })
+          };
+        }
+        // User exists
+        if (callCount === 2) {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: { id: userId },
+                  error: null
+                })
+              })
+            })
+          };
+        }
+        // Insert to Team A succeeds
+        if (callCount === 3) {
+          return {
+            insert: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: {
+                    id: 'membership-a-id',
+                    team_id: teamAId,
+                    user_id: userId,
+                    created_at: '2026-01-10T10:00:00.000Z'
+                  },
+                  error: null
+                })
+              })
+            })
+          };
+        }
+        // Team B exists
+        if (callCount === 4) {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: { id: teamBId },
+                  error: null
+                })
+              })
+            })
+          };
+        }
+        // User still exists
+        if (callCount === 5) {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: { id: userId },
+                  error: null
+                })
+              })
+            })
+          };
+        }
+        // Insert to Team B also succeeds (no UNIQUE violation across teams)
+        return {
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({
+                data: {
+                  id: 'membership-b-id',
+                  team_id: teamBId,
+                  user_id: userId,
+                  created_at: '2026-01-10T11:00:00.000Z'
+                },
+                error: null
+              })
+            })
+          })
+        };
+      });
+
+      // Add user to Team A
+      const membershipA = await teamsService.addMember(teamAId, userId);
+      expect(membershipA).toHaveProperty('teamId', teamAId);
+      expect(membershipA).toHaveProperty('userId', userId);
+
+      // Add same user to Team B - should succeed (FR43)
+      const membershipB = await teamsService.addMember(teamBId, userId);
+      expect(membershipB).toHaveProperty('teamId', teamBId);
+      expect(membershipB).toHaveProperty('userId', userId);
+
+      // Verify both memberships have different IDs
+      expect(membershipA.id).not.toBe(membershipB.id);
+    });
+  });
+
   describe('isMember', () => {
     it('should return true for existing member', async () => {
       supabase.from.mockReturnValue({

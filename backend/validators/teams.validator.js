@@ -70,13 +70,10 @@ const assignProjectSchema = z.object({
     .uuid('Project ID must be a valid UUID')
 });
 
-const { validateUUID } = require('../utils/validation');
-
 module.exports = {
   createTeamSchema,
   updateTeamSchema,
   addMemberSchema,
   assignProjectSchema,
-  validate,
-  validateUUID
+  validate
 };
