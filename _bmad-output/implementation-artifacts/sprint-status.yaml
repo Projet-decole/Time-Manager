@@ -66,8 +66,8 @@ development_status:
     2-8-setup-frontend-auth-infrastructure: done
     2-9-implement-auth-pages: done
     2-10-implement-reset-password-page: done
-    2-11-implement-profile-page: ready-for-dev
-    2-12-implement-protected-routes-and-navigation: ready-for-dev
+    2-11-implement-profile-page: done
+    2-12-implement-protected-routes-and-navigation: done
     2-13-implement-admin-users-page: ready-for-dev
     epic-2-retrospective: optional
 
