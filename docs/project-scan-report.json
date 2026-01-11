@@ -1,0 +1,266 @@
+{
+  "scanMetadata": {
+    "version": "1.0.0",
+    "scanDate": "2026-01-11T16:00:00.000Z",
+    "scanLevel": "exhaustive",
+    "projectType": "multi-part",
+    "epicScanned": "2-authentication-authorization"
+  },
+  "project": {
+    "name": "Time Manager",
+    "description": "Application de gestion du temps pour employes et managers",
+    "repository": {
+      "type": "monorepo",
+      "workspaceManager": "npm",
+      "workspaces": ["backend", "frontend"]
+    }
+  },
+  "stack": {
+    "frontend": {
+      "framework": "React",
+      "version": "19.1.1",
+      "buildTool": "Vite",
+      "buildToolVersion": "7.1.7",
+      "moduleType": "ESM",
+      "styling": "TailwindCSS",
+      "testFramework": "Vitest",
+      "router": "react-router-dom",
+      "formLibrary": "react-hook-form"
+    },
+    "backend": {
+      "runtime": "Node.js",
+      "runtimeVersion": "20",
+      "framework": "Express",
+      "version": "5.1.0",
+      "moduleType": "CommonJS",
+      "validation": "Zod",
+      "testFramework": "Jest"
+    },
+    "database": {
+      "provider": "Supabase",
+      "engine": "PostgreSQL",
+      "features": ["RLS", "Auth", "Realtime"],
+      "tables": 10
+    },
+    "devops": {
+      "containerization": "Docker",
+      "orchestration": "docker-compose",
+      "ci": "GitHub Actions",
+      "gitHooks": "Husky"
+    }
+  },
+  "structure": {
+    "backend": {
+      "entryPoint": "server.js",
+      "appConfig": "app.js",
+      "directories": {
+        "routes": ["index.js", "auth.routes.js", "users.routes.js", "health.routes.js"],
+        "controllers": ["auth.controller.js", "users.controller.js", "health.controller.js"],
+        "services": ["auth.service.js", "users.service.js", "health.service.js"],
+        "middleware": ["auth.middleware.js", "rbac.middleware.js", "error.middleware.js"],
+        "validators": ["auth.validator.js", "users.validator.js"],
+        "utils": ["supabase.js", "response.js", "pagination.js", "transformers.js", "validation.js", "asyncHandler.js", "AppError.js"]
+      }
+    },
+    "frontend": {
+      "entryPoint": "main.jsx",
+      "appConfig": "App.jsx",
+      "directories": {
+        "pages": ["LoginPage.jsx", "ForgotPasswordPage.jsx", "ResetPasswordPage.jsx", "DashboardPage.jsx", "ProfilePage.jsx", "AdminUsersPage.jsx", "AccessDeniedPage.jsx"],
+        "components/ui": ["Button.jsx", "Input.jsx", "Label.jsx", "Card.jsx", "Alert.jsx", "Badge.jsx", "Table.jsx", "Select.jsx", "Modal.jsx"],
+        "components/common": ["AppLayout.jsx", "ProtectedRoute.jsx", "RoleProtectedRoute.jsx"],
+        "components/users": ["UserFormModal.jsx"],
+        "contexts": ["AuthContext.jsx"],
+        "hooks": ["useAuth.js"],
+        "services": ["authService.js", "usersService.js"],
+        "lib": ["api.js", "supabase.js"]
+      }
+    }
+  },
+  "api": {
+    "basePath": "/api/v1",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "auth": false,
+        "roles": [],
+        "description": "User login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout",
+        "auth": true,
+        "roles": [],
+        "description": "User logout"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/forgot-password",
+        "auth": false,
+        "roles": [],
+        "description": "Request password reset"
+      },
+      {
+        "method": "GET",
+        "path": "/users/me",
+        "auth": true,
+        "roles": [],
+        "description": "Get current user profile"
+      },
+      {
+        "method": "PATCH",
+        "path": "/users/me",
+        "auth": true,
+        "roles": [],
+        "description": "Update current user profile"
+      },
+      {
+        "method": "GET",
+        "path": "/users",
+        "auth": true,
+        "roles": ["manager"],
+        "description": "List all users with pagination"
+      },
+      {
+        "method": "POST",
+        "path": "/users",
+        "auth": true,
+        "roles": ["manager"],
+        "description": "Create new user"
+      },
+      {
+        "method": "PATCH",
+        "path": "/users/:id",
+        "auth": true,
+        "roles": ["manager"],
+        "description": "Update user"
+      },
+      {
+        "method": "GET",
+        "path": "/health",
+        "auth": false,
+        "roles": [],
+        "description": "Liveness probe"
+      },
+      {
+        "method": "GET",
+        "path": "/ready",
+        "auth": false,
+        "roles": [],
+        "description": "Readiness probe"
+      }
+    ]
+  },
+  "database": {
+    "tables": [
+      {
+        "name": "profiles",
+        "description": "User profiles extending auth.users",
+        "columns": ["id", "email", "first_name", "last_name", "role", "weekly_hours_target", "created_at", "updated_at"],
+        "foreignKeys": [{"column": "id", "references": "auth.users(id)"}]
+      },
+      {
+        "name": "teams",
+        "description": "Work teams",
+        "columns": ["id", "name", "description", "created_at", "updated_at"],
+        "foreignKeys": []
+      },
+      {
+        "name": "team_members",
+        "description": "Team-User junction table",
+        "columns": ["id", "team_id", "user_id", "created_at"],
+        "foreignKeys": [{"column": "team_id", "references": "teams(id)"}, {"column": "user_id", "references": "profiles(id)"}]
+      },
+      {
+        "name": "projects",
+        "description": "Projects for time tracking",
+        "columns": ["id", "code", "name", "description", "budget_hours", "status", "created_at", "updated_at"],
+        "foreignKeys": []
+      },
+      {
+        "name": "categories",
+        "description": "Time entry categories",
+        "columns": ["id", "name", "description", "color", "is_active", "created_at", "updated_at"],
+        "foreignKeys": []
+      },
+      {
+        "name": "team_projects",
+        "description": "Team-Project junction table",
+        "columns": ["id", "team_id", "project_id", "created_at"],
+        "foreignKeys": [{"column": "team_id", "references": "teams(id)"}, {"column": "project_id", "references": "projects(id)"}]
+      },
+      {
+        "name": "time_entries",
+        "description": "Individual time entries",
+        "columns": ["id", "user_id", "project_id", "category_id", "start_time", "end_time", "duration_minutes", "description", "entry_mode", "created_at", "updated_at"],
+        "foreignKeys": [{"column": "user_id", "references": "profiles(id)"}, {"column": "project_id", "references": "projects(id)"}, {"column": "category_id", "references": "categories(id)"}]
+      },
+      {
+        "name": "timesheets",
+        "description": "Weekly timesheets",
+        "columns": ["id", "user_id", "week_start", "week_end", "status", "submitted_at", "validated_at", "validated_by", "rejection_reason", "total_hours", "created_at", "updated_at"],
+        "foreignKeys": [{"column": "user_id", "references": "profiles(id)"}, {"column": "validated_by", "references": "profiles(id)"}]
+      },
+      {
+        "name": "templates",
+        "description": "Time entry templates",
+        "columns": ["id", "user_id", "name", "description", "config", "created_at", "updated_at"],
+        "foreignKeys": [{"column": "user_id", "references": "profiles(id)"}]
+      },
+      {
+        "name": "audit_logs",
+        "description": "Audit trail",
+        "columns": ["id", "user_id", "action", "table_name", "record_id", "old_values", "new_values", "created_at"],
+        "foreignKeys": [{"column": "user_id", "references": "profiles(id)"}]
+      }
+    ],
+    "migrations": [
+      "20260110105727_create_core_database_schema.sql",
+      "20260110111412_create_time_tracking_tables.sql",
+      "20260110113501_rls_policies.sql"
+    ]
+  },
+  "documentation": {
+    "generated": [
+      "docs/index.md",
+      "docs/architecture.md",
+      "docs/api-reference.md",
+      "docs/data-model.md",
+      "docs/frontend-guide.md",
+      "docs/backend-guide.md"
+    ],
+    "existing": [
+      "docs/DOCKER.md",
+      "docs/CI-CD.md",
+      "docs/TESTS.md",
+      "README.md"
+    ]
+  },
+  "epicStatus": {
+    "epic1": {
+      "name": "Foundation & Database Setup",
+      "status": "completed"
+    },
+    "epic2": {
+      "name": "Authentication & Authorization",
+      "status": "completed",
+      "stories": {
+        "2.1": "done",
+        "2.2": "done",
+        "2.3": "done",
+        "2.4": "done",
+        "2.5": "done",
+        "2.6": "done",
+        "2.7": "done",
+        "2.8": "done",
+        "2.9": "done",
+        "2.10": "done",
+        "2.11": "done",
+        "2.12": "done",
+        "2.13": "done",
+        "2.14": "done"
+      }
+    }
+  }
+}
