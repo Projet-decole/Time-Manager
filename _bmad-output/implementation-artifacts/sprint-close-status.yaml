@@ -5,10 +5,10 @@ epic_number: 3
 epic_name: "Admin Data Management"
 mode: "interactive"  # interactive | yolo
 started_at: "2026-01-11T14:30:00Z"
-completed_at: null
-current_step: "step-08-git-ops"
+completed_at: "2026-01-11T16:00:00Z"
+current_step: "completed"
 
-stepsCompleted: ["step-01-init", "step-02-code-review", "step-03-tests", "step-04-docker", "step-05-documentation", "step-06-retrospective", "step-07-changelog"]
+stepsCompleted: ["step-01-init", "step-02-code-review", "step-03-tests", "step-04-docker", "step-05-documentation", "step-06-retrospective", "step-07-changelog", "step-08-git-ops", "step-09-report"]
 
 # Résultats des validations
 validation_results:
@@ -99,12 +99,13 @@ retrospective:
 # Opérations Git
 git_ops:
   branch_name: "epic-3-admin-data-managment"
-  commit_count: 1
-  pr_url: null
-  pr_number: null
-  merged: false
-  tag: null
-  new_branch: null
+  status: "completed"
+  pushed: true
+  pr_url: "https://github.com/Lunos/Time-Manager/pull/12"
+  pr_number: 12
+  pr_merged: true
+  tag: "v3.0"
+  new_branch: "epic-4-time-tracking"
 
 # Changelog généré
 changelog:
