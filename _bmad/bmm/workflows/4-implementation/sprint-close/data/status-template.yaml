@@ -1,0 +1,68 @@
+# Sprint Close Status - Template
+# Ce fichier suit la progression du workflow sprint-close
+
+epic_number: null
+epic_name: ""
+mode: "interactive"  # interactive | yolo
+started_at: null
+completed_at: null
+current_step: "step-01-init"
+
+stepsCompleted: []
+
+# Résultats des validations
+validation_results:
+  code_review:
+    status: "pending"  # pending | in_progress | passed | failed
+    attempts: 0
+    issues_found: 0
+    issues_resolved: 0
+    stories_reviewed: []
+  tests:
+    status: "pending"
+    attempts: 0
+    unit_passed: null
+    integration_passed: null
+    e2e_passed: null
+    coverage:
+      backend: null
+      frontend: null
+  docker:
+    status: "pending"
+    attempts: 0
+    backend_dev: null
+    backend_prod: null
+    frontend_dev: null
+    frontend_prod: null
+
+# Journal des issues rencontrées
+issues_log: []
+# Format:
+# - step: "step-02-code-review"
+#   issue: "Description du problème"
+#   resolution: "Comment il a été résolu"
+#   timestamp: "2026-01-11T14:30:00Z"
+
+# Rétrospective
+retrospective:
+  went_well: []
+  to_improve: []
+  actions: []
+  user_remarks: []
+
+# Opérations Git
+git_ops:
+  branch_name: ""
+  commit_count: 0
+  pr_url: null
+  pr_number: null
+  merged: false
+  tag: null
+  new_branch: null
+
+# Changelog généré
+changelog:
+  summary: ""
+  features: []
+  improvements: []
+  fixes: []

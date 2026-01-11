@@ -1,19 +1,30 @@
 # .husky/pre-push
+# Version allegee - tests complets via npm run test:epic
 
-echo "Running full test suite..."
+echo "🔍 Pre-push: validation rapide..."
 
-# Backend tests
-echo "Testing backend..."
-npm run test --workspace=backend || {
-  echo "❌ Backend tests failed!"
+# Lint frontend uniquement
+echo "Linting frontend..."
+npm run lint --workspace=frontend || {
+  echo "❌ Lint failed!"
   exit 1
 }
 
-# Frontend tests
-echo "Testing frontend..."
-npm run test --workspace=frontend || {
-  echo "❌ Frontend tests failed!"
+# Tests unitaires backend (rapides)
+echo "Testing backend (unit)..."
+npm run test --workspace=backend -- --testPathIgnorePatterns=integration || {
+  echo "❌ Backend unit tests failed!"
   exit 1
 }
 
-echo "✅ All tests passed!"
+# Tests unitaires frontend (rapides)
+echo "Testing frontend (unit)..."
+npm run test --workspace=frontend -- --run || {
+  echo "❌ Frontend unit tests failed!"
+  exit 1
+}
+
+echo "✅ Pre-push validation passed!"
+echo ""
+echo "💡 Pour une validation complete avant push sur main:"
+echo "   npm run test:epic"

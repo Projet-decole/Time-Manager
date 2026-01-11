@@ -504,7 +504,235 @@ curl -X POST http://localhost:3000/api/v1/users \
 
 ---
 
+## Teams (Epic 3)
+
+### GET /teams
+
+Liste toutes les equipes avec pagination.
+
+**Auth** : Bearer token requis
+**Role** : `manager` uniquement
+
+**Query Parameters** :
+| Param | Type | Defaut | Description |
+|-------|------|--------|-------------|
+| page | number | 1 | Numero de page |
+| limit | number | 20 | Items par page (max 100) |
+
+**Response 200** :
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Frontend Team",
+      "description": "Team working on frontend",
+      "memberCount": 5,
+      "projectCount": 2,
+      "createdAt": "2026-01-10T10:00:00Z"
+    }
+  ],
+  "meta": { "pagination": { ... } }
+}
+```
+
+### POST /teams
+
+Cree une nouvelle equipe.
+
+**Auth** : Bearer token requis
+**Role** : `manager` uniquement
+
+**Request Body** :
+```json
+{
+  "name": "New Team",
+  "description": "Team description"
+}
+```
+
+**Response 201** : Team created
+
+### GET /teams/:id
+
+Recupere les details d'une equipe incluant membres et projets.
+
+### PATCH /teams/:id
+
+Met a jour une equipe.
+
+### DELETE /teams/:id
+
+Supprime une equipe (soft delete).
+
+### POST /teams/:id/members
+
+Ajoute un membre a l'equipe.
+
+**Request Body** :
+```json
+{
+  "userId": "uuid"
+}
+```
+
+### DELETE /teams/:id/members/:userId
+
+Retire un membre de l'equipe.
+
+### POST /teams/:id/projects
+
+Assigne un projet a l'equipe.
+
+**Request Body** :
+```json
+{
+  "projectId": "uuid"
+}
+```
+
+### DELETE /teams/:id/projects/:projectId
+
+Retire un projet de l'equipe.
+
+---
+
+## Projects (Epic 3)
+
+### GET /projects
+
+Liste tous les projets avec pagination.
+
+**Auth** : Bearer token requis
+**Role** : `manager` uniquement
+
+**Query Parameters** :
+| Param | Type | Defaut | Description |
+|-------|------|--------|-------------|
+| page | number | 1 | Numero de page |
+| limit | number | 20 | Items par page |
+| includeArchived | boolean | false | Inclure les projets archives |
+
+**Response 200** :
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "code": "PRJ-001",
+      "name": "Project Alpha",
+      "description": "Main project",
+      "status": "active",
+      "budgetHours": 1000,
+      "usedHours": 250,
+      "teamCount": 3,
+      "createdAt": "2026-01-10T10:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /projects
+
+Cree un nouveau projet (code auto-genere PRJ-XXX).
+
+**Request Body** :
+```json
+{
+  "name": "New Project",
+  "description": "Project description",
+  "budgetHours": 500
+}
+```
+
+### GET /projects/:id
+
+Recupere les details d'un projet incluant equipes assignees.
+
+### PATCH /projects/:id
+
+Met a jour un projet.
+
+### DELETE /projects/:id
+
+Archive un projet (soft delete).
+
+### POST /projects/:id/restore
+
+Restaure un projet archive.
+
+---
+
+## Categories (Epic 3)
+
+### GET /categories
+
+Liste toutes les categories.
+
+**Auth** : Bearer token requis
+**Role** : `manager` uniquement
+
+**Query Parameters** :
+| Param | Type | Defaut | Description |
+|-------|------|--------|-------------|
+| includeInactive | boolean | false | Inclure les categories inactives |
+
+**Response 200** :
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Development",
+      "description": "Coding tasks",
+      "color": "#3B82F6",
+      "isActive": true,
+      "createdAt": "2026-01-10T10:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /categories
+
+Cree une nouvelle categorie.
+
+**Request Body** :
+```json
+{
+  "name": "Meeting",
+  "description": "Team meetings",
+  "color": "#10B981"
+}
+```
+
+### GET /categories/:id
+
+Recupere les details d'une categorie.
+
+### PATCH /categories/:id
+
+Met a jour une categorie.
+
+### DELETE /categories/:id
+
+Desactive une categorie (soft delete).
+
+### POST /categories/:id/activate
+
+Reactive une categorie precedemment desactivee.
+
+---
+
 ## Changelog
+
+### v1.1 (Epic 3)
+- **Teams API** : CRUD equipes, gestion membres, assignation projets
+- **Projects API** : CRUD projets avec codes auto-generes, archivage/restauration
+- **Categories API** : CRUD categories avec couleurs, activation/desactivation
 
 ### v1.0 (Epic 2)
 - `POST /auth/login` - Authentification
