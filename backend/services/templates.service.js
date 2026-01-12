@@ -270,8 +270,16 @@ const create = async (userId, data) => {
     `);
 
   if (entriesError) {
-    // Cleanup template if entries fail
-    await supabase.from('templates').delete().eq('id', template.id);
+    // Cleanup template if entries fail (best-effort rollback)
+    // Note: Supabase JS client doesn't support true transactions, so this is a pseudo-rollback
+    const { error: cleanupError } = await supabase.from('templates').delete().eq('id', template.id);
+    if (cleanupError) {
+      console.error('[TEMPLATES] Failed to cleanup orphaned template during rollback:', {
+        templateId: template.id,
+        error: cleanupError.message
+      });
+      // Log for manual cleanup but don't throw - the original error is more important
+    }
 
     // Check for foreign key violations
     if (entriesError.code === '23503') {

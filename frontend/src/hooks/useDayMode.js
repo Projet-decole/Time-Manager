@@ -206,9 +206,11 @@ export function useDayMode() {
    * Calculate day statistics
    */
   const getDayStats = useCallback(() => {
-    if (!activeDay) return null;
+    if (!activeDay || !activeDay.startTime) return null;
 
     const startTime = new Date(activeDay.startTime);
+    if (isNaN(startTime.getTime())) return null;
+
     const endTime = activeDay.endTime ? new Date(activeDay.endTime) : new Date();
     const totalMinutes = Math.floor((endTime - startTime) / (1000 * 60));
 

@@ -120,12 +120,17 @@ export function useTimer() {
       throw new Error('Failed to start timer');
     } catch (err) {
       if (isMountedRef.current) {
-        setError(err.message);
-
-        // If timer already running, sync state with the existing timer
+        // If timer already running in another session/tab, sync with it
+        // This is the expected behavior - user has one active timer at a time
         if (err.code === 'TIMER_ALREADY_RUNNING' && err.data) {
+          // Sync state with the existing timer from server
+          // Note: This timer is from the same user account, possibly from another tab
           setActiveTimer(err.data);
           startInterval(err.data.startTime);
+          // Clear error since we successfully synced with existing timer
+          setError(null);
+        } else {
+          setError(err.message);
         }
       }
       throw err;
