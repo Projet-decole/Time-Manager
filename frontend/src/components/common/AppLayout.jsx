@@ -64,7 +64,13 @@ export default function AppLayout() {
           </Link>
 
           {/* Navigation */}
-          <nav className="flex items-center gap-6">
+          <nav className="hidden sm:flex items-center gap-6">
+            <Link
+              to="/time-tracking"
+              className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+            >
+              Suivi du temps
+            </Link>
             <Link
               to="/dashboard"
               className="text-gray-600 hover:text-gray-900 text-sm font-medium"

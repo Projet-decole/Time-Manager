@@ -34,13 +34,21 @@ const errorHandler = (err, req, res, next) => {
 
   // Handle AppError (operational errors) - these are safe to expose to client
   if (isOperational) {
+    const errorResponse = {
+      code: err.code,
+      message: err.message,
+      details: err.details
+    };
+
+    // Include additional data if present (e.g., active timer data for TIMER_ALREADY_RUNNING)
+    // Story 4.2: Simple Mode Start Timer API - AC2
+    if (err.data) {
+      errorResponse.data = err.data;
+    }
+
     return res.status(err.statusCode).json({
       success: false,
-      error: {
-        code: err.code,
-        message: err.message,
-        details: err.details
-      }
+      error: errorResponse
     });
   }
 

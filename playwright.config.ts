@@ -21,9 +21,9 @@ export default defineConfig({
     ['html', { open: 'never' }],
   ],
 
-  // Parallélisation
+  // Parallélisation - limiter les workers pour éviter surcharge mémoire
   fullyParallel: true,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : 2, // Max 2 workers en local pour éviter plantage
 
   // Retry en CI
   retries: process.env.CI ? 2 : 0,
