@@ -117,7 +117,7 @@ development_status:
     6-1-implement-employee-dashboard-api: done
     6-2-implement-reusable-chart-components: done
     6-3-implement-employee-dashboard-kpis-section: done
-    6-4-implement-employee-dashboard-charts: ready-for-dev
+    6-4-implement-employee-dashboard-charts: done
     6-5-implement-employee-time-entry-history: ready-for-dev
     6-6-implement-employee-dashboard-page: ready-for-dev
     epic-6-retrospective: optional

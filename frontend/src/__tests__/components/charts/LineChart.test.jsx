@@ -5,13 +5,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { LineChart } from '../../../components/charts/LineChart';
 
-// Mock ResizeObserver which is required by Recharts
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-globalThis.ResizeObserver = ResizeObserverMock;
+// Note: ResizeObserver and DOM dimension mocks are defined globally in setupTests.js
 
 const mockData = [
   { date: '2024-01-01', hours: 8 },

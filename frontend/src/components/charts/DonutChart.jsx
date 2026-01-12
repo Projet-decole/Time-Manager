@@ -56,6 +56,7 @@ const renderLegend = (props) => {
  * @param {number} [props.innerRadius=60] - Inner radius of donut
  * @param {number} [props.outerRadius=100] - Outer radius of donut
  * @param {boolean} [props.showLegend=true] - Whether to show legend
+ * @param {Function} [props.onSegmentClick] - Callback when a pie segment is clicked
  */
 export const DonutChart = ({
   data = [],
@@ -63,7 +64,8 @@ export const DonutChart = ({
   height = 300,
   innerRadius = 60,
   outerRadius = 100,
-  showLegend = true
+  showLegend = true,
+  onSegmentClick
 }) => {
   // Loading state
   if (loading) {
@@ -108,6 +110,8 @@ export const DonutChart = ({
             paddingAngle={2}
             dataKey="value"
             nameKey="name"
+            onClick={(data) => onSegmentClick?.(data)}
+            style={onSegmentClick ? { cursor: 'pointer' } : undefined}
           >
             {dataWithPercentage.map((entry, index) => (
               <Cell
