@@ -1,7 +1,7 @@
 // frontend/src/__tests__/pages/AdminUsersPage.test.jsx
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import AdminUsersPage from '../../pages/AdminUsersPage';
@@ -86,6 +86,11 @@ describe('AdminUsersPage', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    cleanup();
+    vi.clearAllTimers();
+  });
+
   describe('AC1: Display users table', () => {
     it('displays page title', async () => {
       renderAdminUsersPage();
@@ -141,13 +146,15 @@ describe('AdminUsersPage', () => {
     });
 
     it('shows loading state initially', () => {
+      // Use a deferred promise that we control
+      let resolvePromise;
+      const pendingPromise = new Promise((resolve) => { resolvePromise = resolve; });
+
       authService.authService.isAuthenticated.mockReturnValue(true);
       authService.authService.getProfile.mockResolvedValue(mockManagerUser);
-      usersService.usersService.getAll.mockImplementation(
-        () => new Promise(() => {}) // Never resolves
-      );
+      usersService.usersService.getAll.mockImplementation(() => pendingPromise);
 
-      render(
+      const { unmount } = render(
         <MemoryRouter initialEntries={['/admin/users']}>
           <AuthProvider>
             <AdminUsersPage />
@@ -157,6 +164,10 @@ describe('AdminUsersPage', () => {
 
       // Should not show users yet
       expect(screen.queryByText('Dupont')).not.toBeInTheDocument();
+
+      // Clean up: resolve the promise and unmount
+      resolvePromise({ success: true, data: [], meta: { pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } } });
+      unmount();
     });
 
     it('shows empty state when no users', async () => {

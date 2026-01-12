@@ -1,7 +1,7 @@
 // frontend/src/__tests__/components/ProtectedRoute.test.jsx
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from '../../components/common/ProtectedRoute';
 import { AuthProvider } from '../../contexts/AuthContext';
@@ -60,6 +60,11 @@ describe('ProtectedRoute', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    cleanup();
+    vi.clearAllTimers();
+  });
+
   describe('AC1: Redirect to login when not authenticated', () => {
     it('redirects to /login when user is not authenticated', async () => {
       renderWithRouter('/protected', false);
@@ -91,13 +96,15 @@ describe('ProtectedRoute', () => {
 
   describe('AC5: Loading state', () => {
     it('shows loading indicator while auth state is loading', async () => {
+      // Use a deferred promise that we control
+      let resolvePromise;
+      const pendingPromise = new Promise((resolve) => { resolvePromise = resolve; });
+
       // Simulate loading state by making getProfile return a pending promise
       authService.authService.isAuthenticated.mockReturnValue(true);
-      authService.authService.getProfile.mockImplementation(
-        () => new Promise(() => {}) // Never resolves
-      );
+      authService.authService.getProfile.mockImplementation(() => pendingPromise);
 
-      render(
+      const { unmount } = render(
         <MemoryRouter initialEntries={['/protected']}>
           <AuthProvider>
             <Routes>
@@ -116,6 +123,10 @@ describe('ProtectedRoute', () => {
 
       // Should show loading (spinner)
       expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+
+      // Clean up: resolve the promise and unmount
+      resolvePromise({ id: '1', email: 'test@example.com', firstName: 'Test', lastName: 'User', role: 'employee' });
+      unmount();
     });
   });
 });

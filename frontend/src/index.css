@@ -10,3 +10,35 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* ===========================================
+ * Timer Display Animations (Story 4.4)
+ * =========================================== */
+
+/* Subtle pulse animation for running timer */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* Blink animation for timer colons */
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.3;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}

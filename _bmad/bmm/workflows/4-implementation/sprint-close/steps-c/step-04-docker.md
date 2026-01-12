@@ -21,6 +21,7 @@ Valider que les images Docker (dev et prod) se construisent correctement pour ga
 
 ### Step-Specific Rules:
 
+- 🐳 CRITICAL: Docker daemon MUST be running before builds
 - 🎯 Execute via `npm run docker:validate`
 - 🚫 FORBIDDEN to skip failing builds without acknowledgment
 - 💬 In interactive mode: stop and consult on failures
@@ -28,7 +29,45 @@ Valider que les images Docker (dev et prod) se construisent correctement pour ga
 
 ## MANDATORY SEQUENCE
 
-### 1. Announce Docker Validation
+### 1. Verify Docker Daemon Running
+
+```bash
+docker info > /dev/null 2>&1
+```
+
+```
+IF Docker is NOT running:
+  IF mode == interactive:
+    Display:
+    "**🐳 Docker requis pour la validation**
+
+    Le daemon Docker ne semble pas être en cours d'exécution.
+    Les builds d'images ne peuvent pas être effectués.
+
+    **Action requise :**
+    Veuillez lancer Docker Desktop ou le daemon Docker.
+
+    Commandes selon votre système :
+    - **Linux:** `sudo systemctl start docker`
+    - **macOS/Windows:** Lancez Docker Desktop
+
+    [C] Confirmer que Docker est lancé
+    [S] Skip la validation Docker (non recommandé)
+    [A] Abandonner"
+
+    Wait for user choice
+    IF C: Re-check Docker, loop if still not running
+    IF S: Log skip, continue to next step
+    IF A: Exit workflow
+
+  IF mode == yolo:
+    Log: "DOCKER_NOT_RUNNING - Cannot validate builds"
+    Log to issues_log: "Docker validation skipped - daemon not running"
+    Update status with docker_available: false
+    Continue to next step
+```
+
+### 2. Announce Docker Validation
 
 Display:
 
@@ -40,7 +79,7 @@ Construction des images :
 
 Cela peut prendre quelques minutes..."
 
-### 2. Execute Docker Builds
+### 3. Execute Docker Builds
 
 Run: `npm run docker:validate`
 
@@ -50,25 +89,26 @@ This command executes:
 
 Capture output and results for each build.
 
-### 3. Parse Results
+### 4. Parse Results
 
 Extract from output:
 
 ```yaml
 docker:
+  daemon_running: true/false
   backend:
-    status: "success" | "failed"
+    status: "success" | "failed" | "skipped"
     duration: Xs
     image_size: XMB
     error: null | "error message"
   frontend:
-    status: "success" | "failed"
+    status: "success" | "failed" | "skipped"
     duration: Xs
     image_size: XMB
     error: null | "error message"
 ```
 
-### 4. Handle Failures (Mode-Dependent)
+### 5. Handle Failures (Mode-Dependent)
 
 **IF any build failed:**
 
@@ -103,7 +143,7 @@ IF mode == yolo:
     Continue with warning
 ```
 
-### 5. Check Image Sizes (Optional)
+### 6. Check Image Sizes (Optional)
 
 IF builds succeeded, check image sizes:
 
@@ -113,19 +153,20 @@ IF backend_size > 500MB OR frontend_size > 200MB:
   Log to issues_log (informational)
 ```
 
-### 6. Update Status and Proceed
+### 7. Update Status and Proceed
 
 Update `{statusFile}`:
 
 ```yaml
 validation_results.docker:
-  status: "passed" | "passed_with_warnings" | "failed"
+  status: "passed" | "passed_with_warnings" | "failed" | "skipped"
+  docker_available: true/false
   attempts: {count}
   backend:
-    status: "success" | "failed"
+    status: "success" | "failed" | "skipped"
     size: XMB
   frontend:
-    status: "success" | "failed"
+    status: "success" | "failed" | "skipped"
     size: XMB
 
 stepsCompleted: [..., "step-04-docker"]
@@ -151,13 +192,15 @@ Display:
 
 ### ✅ SUCCESS:
 
-- Both images built successfully
+- Docker daemon verified before builds
+- Both images built successfully (or skipped with acknowledgment)
 - Results captured and tracked
 - Failures handled appropriately per mode
 - Status file updated
 
 ### ❌ SYSTEM FAILURE:
 
-- Skipping Docker validation entirely
+- Attempting builds without Docker daemon check
+- Skipping Docker validation entirely without logging
 - Not capturing build errors
 - Proceeding without user acknowledgment in interactive mode

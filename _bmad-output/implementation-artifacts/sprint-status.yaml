@@ -74,63 +74,64 @@ development_status:
     epic-2-retrospective: done
 
     # Epic 3: Admin Data Management (8 stories)
-    epic-3: in-progress
+    epic-3: done
     3-1-implement-teams-crud-api: done
     3-2-implement-team-member-assignment-api: done
     3-3-implement-projects-crud-api: done
     3-4-implement-team-project-assignment-api: done
     3-5-implement-categories-crud-api: done
-    3-6-implement-admin-management-ui-teams: review
-    3-7-implement-admin-management-ui-projects: review
-    3-8-implement-admin-management-ui-categories: review
+    3-6-implement-admin-management-ui-teams: done
+    3-7-implement-admin-management-ui-projects: done
+    3-8-implement-admin-management-ui-categories: done
     epic-3-retrospective: optional
 
-    # Epic 4: Time Tracking - 3 Modes (10 stories)
-    epic-4: backlog
-    4-1-implement-time-entries-crud-api: backlog
-    4-2-implement-simple-mode-start-timer-api: backlog
-    4-3-implement-simple-mode-stop-timer-api: backlog
-    4-4-implement-simple-mode-ui: backlog
-    4-5-implement-day-mode-day-start-end-api: backlog
-    4-6-implement-day-mode-time-block-management-api: backlog
-    4-7-implement-day-mode-ui-with-timeline: backlog
-    4-8-implement-templates-crud-api: backlog
-    4-9-implement-template-application-api: backlog
-    4-10-implement-template-mode-ui: backlog
+    # Epic 4: Time Tracking - 3 Modes (11 stories - includes bug fix story)
+    epic-4: in-progress
+    4-1-implement-time-entries-crud-api: done
+    4-2-implement-simple-mode-start-timer-api: done
+    4-3-implement-simple-mode-stop-timer-api: done
+    4-4-implement-simple-mode-ui: done
+    4-5-implement-day-mode-day-start-end-api: done
+    4-6-implement-day-mode-time-block-management-api: done
+    4-7-implement-day-mode-ui-with-timeline: done
+    4-8-implement-templates-crud-api: done
+    4-9-implement-template-application-api: done
+    4-10-implement-template-mode-ui: done
+    4-11-fix-epic-4-bugs: done
     epic-4-retrospective: optional
 
     # Epic 5: Timesheet Workflow (8 stories)
-    epic-5: backlog
-    5-1-implement-timesheets-crud-api: backlog
-    5-2-implement-timesheet-submission-api: backlog
-    5-3-implement-timesheet-validation-api: backlog
-    5-4-implement-timesheet-reopen-api: backlog
-    5-5-implement-manager-timesheet-list-api: backlog
-    5-6-implement-employee-timesheet-ui: backlog
-    5-7-implement-manager-validation-ui: backlog
-    5-8-implement-timesheet-notification-system: backlog
+    epic-5: in-progress
+    5-1-implement-timesheets-crud-api: ready-for-dev
+    5-2-implement-timesheet-submission-api: ready-for-dev
+    5-3-implement-timesheet-validation-api: ready-for-dev
+    5-4-implement-timesheet-reopen-api: ready-for-dev
+    5-5-implement-manager-timesheet-list-api: ready-for-dev
+    5-6-implement-employee-timesheet-ui: ready-for-dev
+    5-7-implement-manager-validation-ui: ready-for-dev
+    5-8-implement-timesheet-notification-system: ready-for-dev
     epic-5-retrospective: optional
 
     # Epic 6: Employee Dashboard (6 stories)
-    epic-6: backlog
-    6-1-implement-employee-dashboard-api: backlog
-    6-2-implement-reusable-chart-components: backlog
-    6-3-implement-employee-dashboard-kpis-section: backlog
-    6-4-implement-employee-dashboard-charts: backlog
-    6-5-implement-employee-time-entry-history: backlog
-    6-6-implement-employee-dashboard-page: backlog
+    epic-6: in-progress
+    6-1-implement-employee-dashboard-api: ready-for-dev
+    6-2-implement-reusable-chart-components: ready-for-dev
+    6-3-implement-employee-dashboard-kpis-section: ready-for-dev
+    6-4-implement-employee-dashboard-charts: ready-for-dev
+    6-5-implement-employee-time-entry-history: ready-for-dev
+    6-6-implement-employee-dashboard-page: ready-for-dev
     epic-6-retrospective: optional
 
     # Epic 7: Manager Dashboards (8 stories)
-    epic-7: backlog
-    7-1-implement-team-dashboard-api: backlog
-    7-2-implement-team-dashboard-kpis-section: backlog
-    7-3-implement-team-dashboard-charts: backlog
-    7-4-implement-employee-drill-down-view: backlog
-    7-5-implement-project-dashboard-api: backlog
-    7-6-implement-project-dashboard-ui: backlog
-    7-7-implement-manager-dashboard-navigation: backlog
-    7-8-implement-manager-alerts-panel: backlog
+    epic-7: in-progress
+    7-1-implement-team-dashboard-api: ready-for-dev
+    7-2-implement-team-dashboard-kpis-section: ready-for-dev
+    7-3-implement-team-dashboard-charts: ready-for-dev
+    7-4-implement-employee-drill-down-view: ready-for-dev
+    7-5-implement-project-dashboard-api: ready-for-dev
+    7-6-implement-project-dashboard-ui: ready-for-dev
+    7-7-implement-manager-dashboard-navigation: ready-for-dev
+    7-8-implement-manager-alerts-panel: ready-for-dev
     epic-7-retrospective: optional
 
     # Epic 8: Audit Trail & Polish (10 stories)

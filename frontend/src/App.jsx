@@ -2,6 +2,7 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './components/ui/Toast';
 
 // Layouts
 import AppLayout from './components/common/AppLayout';
@@ -19,6 +20,7 @@ import AccessDeniedPage from './pages/AccessDeniedPage';
 // Protected pages
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import TimeTrackingPage from './pages/TimeTrackingPage';
 
 // Admin pages
 import AdminUsersPage from './pages/AdminUsersPage';
@@ -30,6 +32,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ToastProvider>
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -39,9 +42,10 @@ function App() {
 
           {/* Protected routes with layout */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/time-tracking" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/time-tracking" element={<TimeTrackingPage />} />
 
             {/* Manager only routes */}
             <Route
@@ -78,9 +82,10 @@ function App() {
             />
           </Route>
 
-          {/* Catch all - redirect to dashboard (ProtectedRoute will handle auth) */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* Catch all - redirect to time-tracking (ProtectedRoute will handle auth) */}
+          <Route path="*" element={<Navigate to="/time-tracking" replace />} />
         </Routes>
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   );
