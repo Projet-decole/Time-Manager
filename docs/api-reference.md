@@ -1,6 +1,6 @@
 # Reference API - Time Manager
 
-> **Version** : 1.0 | **Base URL** : `/api/v1` | **Date** : 2026-01-11
+> **Version** : 1.2 | **Base URL** : `/api/v1` | **Date** : 2026-01-12
 
 ## Conventions
 
@@ -727,7 +727,630 @@ Reactive une categorie precedemment desactivee.
 
 ---
 
+## Time Entries (Epic 4)
+
+L'API Time Entries supporte trois modes de saisie du temps :
+- **Simple Mode** : Timer avec demarrage/arret
+- **Day Mode** : Journee avec blocs de temps
+- **Template Mode** : Application de modeles de journee
+
+### GET /time-entries
+
+Liste les entrees de temps avec pagination et filtrage.
+
+**Auth** : Bearer token requis
+
+**Query Parameters** :
+| Param | Type | Defaut | Description |
+|-------|------|--------|-------------|
+| page | number | 1 | Numero de page |
+| limit | number | 20 | Items par page (max 100) |
+| startDate | string | - | Date debut (YYYY-MM-DD) |
+| endDate | string | - | Date fin (YYYY-MM-DD) |
+| userId | UUID | - | Filtrer par utilisateur (manager only) |
+| entryMode | string | - | Filtrer par mode : `simple`, `day` |
+
+**Response 200** :
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "startTime": "2026-01-12T09:00:00Z",
+      "endTime": "2026-01-12T12:00:00Z",
+      "durationMinutes": 180,
+      "entryMode": "simple",
+      "project": { "id": "uuid", "name": "Project A", "code": "PRJ-001" },
+      "category": { "id": "uuid", "name": "Development", "color": "#3B82F6" },
+      "description": "Working on feature X",
+      "createdAt": "2026-01-12T09:00:00Z"
+    }
+  ],
+  "meta": { "pagination": { ... } }
+}
+```
+
+---
+
+### POST /time-entries
+
+Cree une nouvelle entree de temps.
+
+**Auth** : Bearer token requis
+
+**Request Body** :
+```json
+{
+  "startTime": "2026-01-12T09:00:00Z",
+  "endTime": "2026-01-12T12:00:00Z",
+  "projectId": "uuid",
+  "categoryId": "uuid",
+  "description": "Manual entry",
+  "entryMode": "simple"
+}
+```
+
+**Validation** :
+| Champ | Type | Requis | Regles |
+|-------|------|--------|--------|
+| startTime | datetime | oui | ISO 8601 |
+| endTime | datetime | non | > startTime |
+| projectId | UUID | non | Projet existant |
+| categoryId | UUID | non | Categorie existante |
+| description | string | non | Max 500 caracteres |
+| entryMode | string | non | `simple` ou `day` |
+
+**Response 201** : Created time entry
+
+---
+
+### GET /time-entries/:id
+
+Recupere les details d'une entree de temps.
+
+**Auth** : Bearer token requis (proprietaire ou manager)
+
+---
+
+### PATCH /time-entries/:id
+
+Met a jour une entree de temps.
+
+**Auth** : Bearer token requis (proprietaire uniquement)
+
+> **Note** : L'entree ne peut etre modifiee que si la feuille de temps associee est en statut `draft`.
+
+---
+
+### DELETE /time-entries/:id
+
+Supprime une entree de temps.
+
+**Auth** : Bearer token requis (proprietaire uniquement)
+
+> **Note** : L'entree ne peut etre supprimee que si la feuille de temps associee est en statut `draft`.
+
+---
+
+### Simple Mode - Timer
+
+#### POST /time-entries/start
+
+Demarre un nouveau timer.
+
+**Auth** : Bearer token requis
+
+**Request Body** :
+```json
+{
+  "projectId": "uuid",
+  "categoryId": "uuid",
+  "description": "Working on task"
+}
+```
+
+Tous les champs sont optionnels et peuvent etre definis a l'arret.
+
+**Response 201** :
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "startTime": "2026-01-12T09:00:00Z",
+    "endTime": null,
+    "entryMode": "simple"
+  }
+}
+```
+
+**Erreurs** :
+| Code | Description |
+|------|-------------|
+| `TIMER_ALREADY_RUNNING` | Un timer est deja actif |
+
+---
+
+#### POST /time-entries/stop
+
+Arrete le timer actif.
+
+**Auth** : Bearer token requis
+
+**Request Body** :
+```json
+{
+  "projectId": "uuid",
+  "categoryId": "uuid",
+  "description": "Completed task"
+}
+```
+
+Permet de mettre a jour les champs a l'arret du timer.
+
+**Response 200** :
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "startTime": "2026-01-12T09:00:00Z",
+    "endTime": "2026-01-12T12:00:00Z",
+    "durationMinutes": 180,
+    "project": { ... },
+    "category": { ... }
+  }
+}
+```
+
+**Erreurs** :
+| Code | Description |
+|------|-------------|
+| `NO_ACTIVE_TIMER` | Aucun timer actif a arreter |
+
+---
+
+#### GET /time-entries/active
+
+Recupere le timer actif de l'utilisateur.
+
+**Auth** : Bearer token requis
+
+**Response 200** (timer actif) :
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "startTime": "2026-01-12T09:00:00Z",
+    "endTime": null,
+    "projectId": "uuid",
+    "categoryId": "uuid"
+  }
+}
+```
+
+**Response 200** (pas de timer) :
+```json
+{
+  "success": true,
+  "data": null
+}
+```
+
+---
+
+### Day Mode - Journee
+
+#### POST /time-entries/day/start
+
+Demarre une nouvelle journee de travail.
+
+**Auth** : Bearer token requis
+
+**Request Body** :
+```json
+{
+  "description": "Journee projet X"
+}
+```
+
+**Response 201** :
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "startTime": "2026-01-12T09:00:00Z",
+    "endTime": null,
+    "entryMode": "day",
+    "blocks": []
+  }
+}
+```
+
+**Erreurs** :
+| Code | Description |
+|------|-------------|
+| `DAY_ALREADY_ACTIVE` | Une journee est deja en cours |
+
+---
+
+#### POST /time-entries/day/end
+
+Termine la journee active.
+
+**Auth** : Bearer token requis
+
+**Response 200** :
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "startTime": "2026-01-12T09:00:00Z",
+    "endTime": "2026-01-12T18:00:00Z",
+    "durationMinutes": 540,
+    "totalBlockMinutes": 480,
+    "unallocatedMinutes": 60,
+    "blockCount": 4
+  }
+}
+```
+
+---
+
+#### GET /time-entries/day/active
+
+Recupere la journee active avec ses blocs.
+
+**Auth** : Bearer token requis
+
+**Response 200** :
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "startTime": "2026-01-12T09:00:00Z",
+    "endTime": null,
+    "blocks": [
+      {
+        "id": "uuid",
+        "startTime": "2026-01-12T09:00:00Z",
+        "endTime": "2026-01-12T12:00:00Z",
+        "durationMinutes": 180,
+        "project": { ... },
+        "category": { ... }
+      }
+    ]
+  }
+}
+```
+
+---
+
+### Day Mode - Blocs de temps
+
+#### POST /time-entries/day/blocks
+
+Cree un bloc de temps dans la journee active.
+
+**Auth** : Bearer token requis
+
+**Request Body** :
+```json
+{
+  "startTime": "2026-01-12T09:00:00Z",
+  "endTime": "2026-01-12T12:00:00Z",
+  "projectId": "uuid",
+  "categoryId": "uuid",
+  "description": "Morning work"
+}
+```
+
+**Validation** :
+- Le bloc doit etre dans les limites de la journee active
+- Les blocs ne peuvent pas se chevaucher
+
+**Response 201** : Created block
+
+**Erreurs** :
+| Code | Description |
+|------|-------------|
+| `NO_ACTIVE_DAY` | Aucune journee active |
+| `BLOCK_OUTSIDE_DAY` | Bloc hors limites de la journee |
+| `BLOCK_OVERLAP` | Chevauchement avec un bloc existant |
+
+---
+
+#### GET /time-entries/day/blocks
+
+Liste les blocs de la journee active.
+
+**Auth** : Bearer token requis
+
+---
+
+#### PATCH /time-entries/day/blocks/:blockId
+
+Met a jour un bloc de temps.
+
+**Auth** : Bearer token requis (proprietaire uniquement)
+
+---
+
+#### DELETE /time-entries/day/blocks/:blockId
+
+Supprime un bloc de temps.
+
+**Auth** : Bearer token requis (proprietaire uniquement)
+
+---
+
+## Templates (Epic 4)
+
+Les templates permettent de sauvegarder et reutiliser des structures de journee.
+
+### GET /templates
+
+Liste les templates de l'utilisateur.
+
+**Auth** : Bearer token requis
+
+**Query Parameters** :
+| Param | Type | Defaut | Description |
+|-------|------|--------|-------------|
+| page | number | 1 | Numero de page |
+| limit | number | 20 | Items par page (max 100) |
+
+**Response 200** :
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Journee standard",
+      "description": "Template pour journee normale",
+      "entryCount": 4,
+      "totalMinutes": 480,
+      "createdAt": "2026-01-10T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### POST /templates
+
+Cree un nouveau template avec ses entrees.
+
+**Auth** : Bearer token requis
+
+**Request Body** :
+```json
+{
+  "name": "Journee standard",
+  "description": "Template pour journee normale",
+  "entries": [
+    {
+      "startTime": "09:00",
+      "endTime": "12:00",
+      "projectId": "uuid",
+      "categoryId": "uuid",
+      "description": "Morning work"
+    },
+    {
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "projectId": "uuid",
+      "categoryId": "uuid",
+      "description": "Afternoon work"
+    }
+  ]
+}
+```
+
+**Validation** :
+| Champ | Type | Requis | Regles |
+|-------|------|--------|--------|
+| name | string | oui | 1-100 caracteres, unique par utilisateur |
+| description | string | non | Max 500 caracteres |
+| entries | array | oui | Au moins 1 entree |
+| entries[].startTime | string | oui | Format HH:mm |
+| entries[].endTime | string | oui | Format HH:mm, > startTime |
+
+**Response 201** : Created template with entries
+
+---
+
+### POST /templates/from-day/:dayId
+
+Cree un template a partir d'une journee existante.
+
+**Auth** : Bearer token requis
+
+**Path Parameters** :
+| Param | Type | Description |
+|-------|------|-------------|
+| dayId | UUID | ID de la journee source |
+
+**Request Body** :
+```json
+{
+  "name": "Template from day",
+  "description": "Created from existing day"
+}
+```
+
+**Response 201** : Created template with entries from day's blocks
+
+---
+
+### GET /templates/:id
+
+Recupere un template avec toutes ses entrees.
+
+**Auth** : Bearer token requis (proprietaire uniquement)
+
+**Response 200** :
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "name": "Journee standard",
+    "description": "Template pour journee normale",
+    "entries": [
+      {
+        "id": "uuid",
+        "startTime": "09:00",
+        "endTime": "12:00",
+        "projectId": "uuid",
+        "categoryId": "uuid",
+        "description": "Morning work"
+      }
+    ],
+    "createdAt": "2026-01-10T10:00:00Z"
+  }
+}
+```
+
+---
+
+### PATCH /templates/:id
+
+Met a jour un template et/ou remplace ses entrees.
+
+**Auth** : Bearer token requis (proprietaire uniquement)
+
+**Request Body** :
+```json
+{
+  "name": "Updated name",
+  "description": "Updated description",
+  "entries": [ ... ]
+}
+```
+
+> **Note** : Si `entries` est fourni, toutes les entrees existantes sont remplacees.
+
+---
+
+### DELETE /templates/:id
+
+Supprime un template et toutes ses entrees.
+
+**Auth** : Bearer token requis (proprietaire uniquement)
+
+---
+
+### POST /templates/:id/apply
+
+Applique un template pour creer une journee pre-remplie.
+
+**Auth** : Bearer token requis (proprietaire uniquement)
+
+**Request Body** :
+```json
+{
+  "date": "2026-01-15"
+}
+```
+
+**Response 201** :
+```json
+{
+  "success": true,
+  "data": {
+    "dayEntry": {
+      "id": "uuid",
+      "startTime": "2026-01-15T09:00:00Z",
+      "endTime": null,
+      "entryMode": "day"
+    },
+    "blocks": [
+      {
+        "id": "uuid",
+        "startTime": "2026-01-15T09:00:00Z",
+        "endTime": "2026-01-15T12:00:00Z",
+        "projectId": "uuid",
+        "categoryId": "uuid"
+      }
+    ],
+    "blockCount": 4
+  }
+}
+```
+
+**Erreurs** :
+| Code | Description |
+|------|-------------|
+| `DAY_ALREADY_EXISTS` | Une journee existe deja pour cette date |
+| `TEMPLATE_NOT_FOUND` | Template non trouve |
+
+---
+
+## Exemples cURL - Time Entries
+
+### Start Timer
+```bash
+curl -X POST http://localhost:3000/api/v1/time-entries/start \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"projectId":"uuid","description":"Working on task"}'
+```
+
+### Stop Timer
+```bash
+curl -X POST http://localhost:3000/api/v1/time-entries/stop \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"categoryId":"uuid"}'
+```
+
+### Start Day
+```bash
+curl -X POST http://localhost:3000/api/v1/time-entries/day/start \
+  -H "Authorization: Bearer <token>"
+```
+
+### Create Block
+```bash
+curl -X POST http://localhost:3000/api/v1/time-entries/day/blocks \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startTime":"2026-01-12T09:00:00Z",
+    "endTime":"2026-01-12T12:00:00Z",
+    "projectId":"uuid"
+  }'
+```
+
+### Apply Template
+```bash
+curl -X POST http://localhost:3000/api/v1/templates/<template-id>/apply \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"date":"2026-01-15"}'
+```
+
+---
+
 ## Changelog
+
+### v1.2 (Epic 4)
+- **Time Entries API** : CRUD entrees de temps avec 3 modes de saisie
+  - Simple Mode : Timer start/stop avec mise a jour a l'arret
+  - Day Mode : Gestion de journee avec blocs de temps
+  - Support des projets et categories optionnels
+- **Templates API** : CRUD templates de journee
+  - Creation manuelle ou depuis une journee existante
+  - Application de template pour creer une journee pre-remplie
 
 ### v1.1 (Epic 3)
 - **Teams API** : CRUD equipes, gestion membres, assignation projets

@@ -6,7 +6,7 @@ const { snakeToCamel, camelToSnake } = require('../utils/transformers');
 const { parsePaginationParams, buildPaginationMeta } = require('../utils/pagination');
 
 /**
- * Get all teams with pagination and member counts
+ * Get all teams with pagination, member counts and project counts
  * @param {Object} pagination - Pagination options { page?: number, limit?: number }
  * @returns {Promise<Object>} { data: Team[], pagination: PaginationMeta }
  * @throws {AppError} If database query fails
@@ -14,7 +14,7 @@ const { parsePaginationParams, buildPaginationMeta } = require('../utils/paginat
 const getAll = async (pagination = {}) => {
   const { page, limit, offset } = parsePaginationParams(pagination);
 
-  // Get teams with member count using a subquery
+  // Get teams with member and project counts using subqueries
   const { data, error, count } = await supabase
     .from('teams')
     .select(`
@@ -23,7 +23,8 @@ const getAll = async (pagination = {}) => {
       description,
       created_at,
       updated_at,
-      team_members(count)
+      team_members(count),
+      team_projects(count)
     `, { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -33,13 +34,15 @@ const getAll = async (pagination = {}) => {
     throw new AppError('Failed to retrieve teams', 500, 'DATABASE_ERROR');
   }
 
-  // Transform data to camelCase and add memberCount
+  // Transform data to camelCase and add memberCount and projectCount
   const transformedData = (data || []).map(team => {
-    const { team_members, ...rest } = team;
+    const { team_members, team_projects, ...rest } = team;
     const memberCount = team_members?.[0]?.count || 0;
+    const projectCount = team_projects?.[0]?.count || 0;
     return {
       ...snakeToCamel(rest),
-      memberCount
+      memberCount,
+      projectCount
     };
   });
 

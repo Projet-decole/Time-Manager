@@ -172,20 +172,32 @@ describe('useTeams', () => {
 
 describe('useTeamDetails', () => {
   const mockTeam = { id: '1', name: 'Team A', description: 'Desc' };
-  const mockMembers = [
-    { id: 'u1', firstName: 'John', lastName: 'Doe' },
-    { id: 'u2', firstName: 'Jane', lastName: 'Smith' }
+  // API returns nested structure: { id: membershipId, user: {...} }
+  const mockMembersApiResponse = [
+    { id: 'm1', user: { id: 'u1', firstName: 'John', lastName: 'Doe', email: 'john@test.com', role: 'employee' } },
+    { id: 'm2', user: { id: 'u2', firstName: 'Jane', lastName: 'Smith', email: 'jane@test.com', role: 'manager' } }
   ];
-  const mockProjects = [
-    { id: 'p1', name: 'Project A' },
-    { id: 'p2', name: 'Project B' }
+  // Hook flattens to: { id: userId, membershipId, firstName, lastName, email, role }
+  const expectedMembers = [
+    { id: 'u1', membershipId: 'm1', firstName: 'John', lastName: 'Doe', email: 'john@test.com', role: 'employee' },
+    { id: 'u2', membershipId: 'm2', firstName: 'Jane', lastName: 'Smith', email: 'jane@test.com', role: 'manager' }
+  ];
+  // API returns nested structure: { id: assignmentId, project: {...} }
+  const mockProjectsApiResponse = [
+    { id: 'a1', project: { id: 'p1', name: 'Project A', code: 'PA', description: 'Desc A', status: 'active', budgetHours: 100 } },
+    { id: 'a2', project: { id: 'p2', name: 'Project B', code: 'PB', description: 'Desc B', status: 'active', budgetHours: 200 } }
+  ];
+  // Hook flattens to: { id: projectId, assignmentId, name, code, description, status, budgetHours }
+  const expectedProjects = [
+    { id: 'p1', assignmentId: 'a1', name: 'Project A', code: 'PA', description: 'Desc A', status: 'active', budgetHours: 100 },
+    { id: 'p2', assignmentId: 'a2', name: 'Project B', code: 'PB', description: 'Desc B', status: 'active', budgetHours: 200 }
   ];
 
   beforeEach(() => {
     vi.clearAllMocks();
     teamsService.getById.mockResolvedValue({ success: true, data: mockTeam });
-    teamsService.getMembers.mockResolvedValue({ success: true, data: mockMembers });
-    teamsService.getProjects.mockResolvedValue({ success: true, data: mockProjects });
+    teamsService.getMembers.mockResolvedValue({ success: true, data: mockMembersApiResponse });
+    teamsService.getProjects.mockResolvedValue({ success: true, data: mockProjectsApiResponse });
   });
 
   it('fetches team details on mount', async () => {
@@ -196,8 +208,8 @@ describe('useTeamDetails', () => {
     });
 
     expect(result.current.team).toEqual(mockTeam);
-    expect(result.current.members).toEqual(mockMembers);
-    expect(result.current.projects).toEqual(mockProjects);
+    expect(result.current.members).toEqual(expectedMembers);
+    expect(result.current.projects).toEqual(expectedProjects);
   });
 
   it('does not fetch when teamId is null', async () => {
