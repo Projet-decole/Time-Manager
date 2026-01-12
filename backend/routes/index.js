@@ -8,6 +8,7 @@ const categoriesRoutes = require('./categories.routes');
 const projectsRoutes = require('./projects.routes');
 const timeEntriesRoutes = require('./time-entries.routes');
 const templatesRoutes = require('./templates.routes');
+const dashboardsRoutes = require('./dashboards.routes');
 const healthController = require('../controllers/health.controller');
 
 /**
@@ -30,6 +31,7 @@ const mountRoutes = (app) => {
   app.use('/api/v1/projects', projectsRoutes);
   app.use('/api/v1/time-entries', timeEntriesRoutes);
   app.use('/api/v1/templates', templatesRoutes);
+  app.use('/api/v1/dashboard', dashboardsRoutes);
 };
 
 module.exports = mountRoutes;
