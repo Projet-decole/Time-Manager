@@ -5,3 +5,5 @@ export { Input } from './Input';
 export { Label } from './Label';
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './Card';
 export { Alert, AlertTitle, AlertDescription } from './Alert';
+export { Skeleton } from './Skeleton';
+export { Progress } from './Progress';
