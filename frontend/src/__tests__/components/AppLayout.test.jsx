@@ -129,21 +129,37 @@ describe('AppLayout', () => {
   });
 
   describe('AC3: Manager navigation items', () => {
-    it('shows Utilisateurs link for manager', async () => {
+    it('shows Administration dropdown with Utilisateurs link for manager', async () => {
+      const user = userEvent.setup();
       renderAppLayout(managerUser);
 
+      // Wait for manager name to appear
+      await waitFor(() => {
+        expect(screen.getByText('Marie')).toBeInTheDocument();
+      });
+
+      // Manager should see Administration dropdown button
+      const adminButton = screen.getByRole('button', { name: /administration/i });
+      expect(adminButton).toBeInTheDocument();
+
+      // Click to open the dropdown
+      await user.click(adminButton);
+
+      // Now the Utilisateurs link should be visible
       await waitFor(() => {
         expect(screen.getByRole('link', { name: /utilisateurs/i })).toBeInTheDocument();
       });
     });
 
-    it('does not show Utilisateurs link for employee', async () => {
+    it('does not show Administration dropdown for employee', async () => {
       renderAppLayout(employeeUser);
 
       await waitFor(() => {
         expect(screen.getByText('Jean')).toBeInTheDocument();
       });
 
+      // Employee should not see Administration dropdown
+      expect(screen.queryByRole('button', { name: /administration/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: /utilisateurs/i })).not.toBeInTheDocument();
     });
   });

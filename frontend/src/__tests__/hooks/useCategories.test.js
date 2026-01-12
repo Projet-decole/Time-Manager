@@ -1,7 +1,7 @@
 // frontend/src/__tests__/hooks/useCategories.test.js
 // Story 3.8: Admin Management UI - Categories
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useCategories } from '../../hooks/useCategories';
 import * as categoriesService from '../../services/categoriesService';
@@ -39,15 +39,26 @@ describe('useCategories', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.clearAllTimers();
+  });
+
   describe('Initial State', () => {
     it('starts with loading true', () => {
-      categoriesService.categoriesService.getAll.mockReturnValue(new Promise(() => {}));
+      // Use a deferred promise that we control
+      let resolvePromise;
+      const pendingPromise = new Promise((resolve) => { resolvePromise = resolve; });
+      categoriesService.categoriesService.getAll.mockReturnValue(pendingPromise);
 
-      const { result } = renderHook(() => useCategories());
+      const { result, unmount } = renderHook(() => useCategories());
 
       expect(result.current.loading).toBe(true);
       expect(result.current.categories).toEqual([]);
       expect(result.current.error).toBeNull();
+
+      // Clean up: resolve the promise and unmount
+      resolvePromise({ success: true, data: [] });
+      unmount();
     });
   });
 
