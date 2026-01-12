@@ -130,8 +130,8 @@ describe('TimeTrackingPage', () => {
 
       renderWithRouter(<TimeTrackingPage />);
 
-      // Timer display still shows
-      expect(screen.getByText('DEMARRER')).toBeInTheDocument();
+      // Mode switch should still render even during project loading
+      expect(screen.getByText('Tache')).toBeInTheDocument();
     });
 
     it('starts in Simple mode by default', () => {
